@@ -1,6 +1,6 @@
 from os import path
 from django.apps import AppConfig
-
+#init editor
 VERBOSE_APP_NAME = 'Python 在线编译器'
 
 def get_current_app_name(file):

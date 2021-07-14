@@ -1,6 +1,6 @@
 from django.contrib import admin
 from  .models import codes
-# Register your models here.
+# Register models
 class CodesAdmin(admin.ModelAdmin):
     list_display = ['code_id',
                     'code_content',

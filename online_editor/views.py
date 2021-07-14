@@ -1,3 +1,8 @@
+"""
+    edited by Shay 
+    add the section of the compile
+
+"""
 from django.http.response import HttpResponseForbidden
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
@@ -101,13 +106,7 @@ def compile(request):
     else:
         return HttpResponseForbidden()
 
-"""
-edited by Kiki
-ohhhhhhhhhhh
 
-"""
-
-#edited by Kiki
 
 # return HttpResponse("OK") -> for no error
 # return JsonResponse({'result':result}) -> for error

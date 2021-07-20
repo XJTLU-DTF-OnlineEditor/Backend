@@ -16,19 +16,46 @@ def index(request):
     context = {}
     return render(request, 'index.html', context)
 
-def execute(request):
-    code = request.body.decode() + "\n" #decoding byte to code
-    
+def run(request):
+    code = request.body.decode() + "\n"
+
     input_name = settings.INPUT_FILE_PATH
     output_name = settings.OUTPUT_FILE_PATH
     shell_script = settings.RUN_IN_DOCKER_SH_PATH
-    
-    # run in docker
-    result = run_in_docker(input_name, code, shell_script, output_name)
-    # enable pretty html formatting and obfuscate input file name with 'source'
-    result = result.replace('\n', "<br>").replace(input_name, "source")
+    if request.POST['compile_status'] != True:
+        response = {
+            "message": "The compilation is not complete yet"
+        }
+        return JsonResponse(response, safe=False)
 
-    return JsonResponse({'result':result})
+    run_data_frontend = {
+        'source': code,
+        'memory_limit': 243232,
+        'time_limit': 5,
+        'compile_status': True,
+        'lang': "python",
+        'input': "",
+        'id': "213121",
+    }
+    # run in docker
+    try:
+        result = run_in_docker(input_name, code, shell_script, output_name)
+        # enable pretty html formatting and obfuscate input file name with 'source'
+        result = result.replace('\n', "<br>").replace(input_name, "source")
+    except:
+        pass
+    else:
+        run_data_backend = {
+            'request_status': "success",
+            'errors': {},
+            'time_limit': 5,  # docker里已实现
+            'compile_status': "OK",
+            'run_status': "OK",
+            'Output': result,
+            'id': "213121",
+        }
+    return JsonResponse(run_data_backend)
+
 def source_check(source):
     if source == "":
         response = {

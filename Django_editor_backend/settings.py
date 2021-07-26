@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'online_editor',
-    
+    'identity',
+
 ]
 
 MIDDLEWARE = [

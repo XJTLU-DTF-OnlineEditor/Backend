@@ -3,7 +3,7 @@
     add the section of the compile
 
 """
-#INSERT INTO online_editor_codes (code_id, code_result,compile_status) VALUES (1,"shuchu","true");
+# INSERT INTO online_editor_codes (code_id, code_result,compile_status) VALUES (1,"shuchu","true");
 from django.db.models import Model
 from django.http.response import HttpResponseForbidden
 from django.shortcuts import render
@@ -30,7 +30,7 @@ def run(request):
         memory_limit = request_content.get("memory_limit")
         input = request_content.get("input")
         source = request_content.get("source")
-        source_check(source)#检查source是否为空
+        source_check(source)  # 检查source是否为空
         time_limit = request_content.get("time_limit")
         compile_status = request_content.get("compile_status")
         id = request_content.get("id")
@@ -72,7 +72,6 @@ def run(request):
             )
             code_response.save()
 
-
     else:  # 如果已经编译,代表数据库中有该代码和他的输出
         try:  # 从数据库中寻找code
             code_ob = Codes.objects.get(code_id=id)
@@ -87,13 +86,13 @@ def run(request):
     run_data_backend = {
         "error_code": error_code,
         "msg": msg,
-        "run_data_backend": {
+        "data": {
             'request_status': "success",
             'errors': errors,
             'time_limit': time_limit,
             'compile_status': compile_status,
             'run_status': "OK",
-            'Output': result,
+            'output': result,
             'id': id, }
     }
     return JsonResponse(run_data_backend)

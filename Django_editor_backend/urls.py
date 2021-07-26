@@ -20,5 +20,6 @@ from django.conf.urls import  include, url
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^', include('online_editor.urls')),
+    url(r'V1/editor/', include('online_editor.urls')),
+    url(r'V1/user/', include('identity.urls'))
 ]

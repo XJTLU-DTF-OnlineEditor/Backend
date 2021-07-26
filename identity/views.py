@@ -39,36 +39,50 @@ def user_register(request):
         }
         return JsonResponse(msg, status=422)
 
-    password = request_content.get("password")
+    password1 = request_content.get("password1")
+    password2 = request_content.get("password2")
     phone = request_content.get("phone")
 
-    if password is not None and phone is not None:
-        try:
-            user = User.objects.create_user(username=username, password=password)
-            person = Person.objects.create(user=user, phone=phone)
-            user.save()
-            person.save()
-            user = authenticate(request, username=username, password=password)
-            login(request, user)
-
-            print(request.user.is_authenticated)
-
-            msg = {
-                "error": 200,
-                "msg": "register success"
-            }
-            return JsonResponse(msg, status=200)
-
-        except Exception as e:
+    if password1 is not None and password2 is not None:
+        if not password1 == password2:
             msg = {
                 "error": 422,
-                "msg": e
+                "msg": "second password is not the same as the first one."
             }
             return JsonResponse(msg, status=422)
+        if phone is None:
+            msg = {
+                "error": 422,
+                "msg": "empty phone number."
+            }
+            return JsonResponse(msg, status=422)
+        else:
+            try:
 
+                user = User.objects.create_user(username=username, password=password1)
+                person = Person.objects.create(user=user, phone=phone)
+                user.save()
+                person.save()
+                user = authenticate(request, username=username, password=password1)
+                login(request, user)
+
+                # print(request.user.is_authenticated)
+
+                msg = {
+                    "error": 200,
+                    "msg": "register success"
+                }
+                return JsonResponse(msg, status=200)
+
+            except Exception as e:
+                msg = {
+                    "error": 422,
+                    "msg": e
+                }
+                return JsonResponse(msg, status=422)
     else:
         msg = {
             "error": 422,
-            "msg": "empty password or phone"
+            "msg": "Please fill in password twice!"
         }
         return JsonResponse(msg, status=422)

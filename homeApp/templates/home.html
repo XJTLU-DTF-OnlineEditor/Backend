@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyhton 学习网站</title>
+    <link rel = "stylesheet" href = "http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css"/>
+    <link rel = "stylesheet" href = "http://cdn.bootcss.com/bootstrap/3.3.0/css/style.css"/>
+    <script src = "http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src = "http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <nav class = "navbar navbar-default" role = "navigation">
+
+        <div class="container">
+            <div class="navbar-header">
+                <button type = "button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example" aria-expanded="false">
+                    <span>导航栏</span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example">
+                <ul class="nav navbar-nav" style="width: 100%;"></ul>
+                <li class="active nac-top">
+                    <a href="{% url 'home' %}">首页</a>
+                </li>
+                <li class="dropdown nav-top">
+                    <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                        课程列表    
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'courseApp:Courses' 'basic' %}">基础教程</a></li>
+                        <li><a href="{% url 'courseApp:Courses' 'higher' %}">高阶教程</a></li>
+                        <li><a href="{% url 'courseApp:Courses' 'data' %}">数据分析</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown nav-top">
+                    <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                        习题列表  
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'execriseApp:basic' %}">基础</a></li>
+                        <li><a href="{% url 'execriseApp:higher' %}">高阶</a></li>
+                            <li><a href="{% url 'execriseApp:data' %}">数据分析</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown nav-top">
+                        <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                            评论
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'commitApp:hot' %}">热门评论</a></li>
+                            <li><a href="{% url 'commitApp:new' %}">最新评论</a></li>
+                        </ul>
+                    </li>
+                    
+                </div>        
+            </div>
+        </nav>
+</body>
+</html>

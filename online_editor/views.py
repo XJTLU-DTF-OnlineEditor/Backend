@@ -27,7 +27,7 @@ def execute(request):
     result = run_in_docker(input_name, code, shell_script, output_name)
     # enable pretty html formatting and obfuscate input file name with 'source'
     result = result.replace('\n', "<br>").replace(input_name, "source")
-
+    # return render(request, 'index.html', {'result':result})
     return JsonResponse({'result':result})
 def source_check(source):
     if source == "":

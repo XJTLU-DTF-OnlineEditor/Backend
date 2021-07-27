@@ -13,7 +13,7 @@ SECRET_KEY = ')!-z(9n^yts=@wa080pf+rb=(*!@7s5)g!k&8r7axe286surg$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*',]
 
 
 # Application definition
@@ -25,8 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'homeApp', #新加主页
+    'courseApp',
+    'commitApp',
+    'execriseApp',
     'online_editor',
-    
+    'DjangoUeditor',
 ]
 
 MIDDLEWARE = [
@@ -44,7 +48,7 @@ ROOT_URLCONF = 'Django_editor_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], #设置共享路径
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,3 +124,6 @@ STATICFILES_DIRS = (
 INPUT_FILE_PATH = os.path.abspath("/tmp/code.py")
 OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
 RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")
+
+MEDIA_URL = '/media/' #设置保存路径
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')

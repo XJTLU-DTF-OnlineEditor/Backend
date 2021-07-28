@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load highlight %}
+{% block title %}
+课程搜索
+{% endblock %}
+{% block content %}
+
+<!-- 广告横幅 -->
+<div class="container-fluid">
+    <div class="row">
+
+    </div>
+</div>
+<!-- 主体内容 -->
+<div class="container">
+    <div class="row row-3">
+        <div class="model-details-title">
+            关于“{{query}}”的搜索结果
+            <div class="col-md-7 hidden-xs model-details-title-search">
+                <form method="get" id="searchform" action="{% url 'haystack_search' %}">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="请输入关键词" required />
+                        <span class="input-group-btn">
+                            <input type="submit" class="btn btn-default" value="查询" />
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="model-details">
+            {% for result in page.object_list %}
+            <div class="courses-model">
+
+                <a href="{% url 'courseApp:coursesDetail' result.object.id %}">
+                    <b>{{result.object.title}}</b>
+                </a>
+                <span>【{{result.object.publishDate|date:"Y-m-d"}}】</span>
+                <!-- 添加课程简要说明 -->
+                <p class="courses-search-model">
+                    {% highlight result.object.description with query %}
+                </p>
+            </div>
+            {% empty %}
+            <p>没有找到相关课程</p>
+            {% endfor %}
+        </div>
+        {% if page.has_previous or page.has_next %}
+        <div>
+            {% if page.has_previous %}
+            <a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">
+                {% endif %}&laquo; 上一页{% if page.has_previous %}</a>{% endif %}
+            |
+            {% if page.has_next %}
+            <a href="?q={{ query }}&amp;page={{ page.next_page_number }}">
+                {% endif %}下一页
+                &raquo;{% if page.has_next %}</a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

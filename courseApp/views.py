@@ -1,7 +1,7 @@
 # from _typeshed import FileDescriptor
 # from typing import NewType
 from django.http.response import JsonResponse
-
+from pyquery import PyQuery as pq
 from django.shortcuts import get_object_or_404, render
 from . models import MyCourse
 from django.core.paginator import Paginator
@@ -17,7 +17,9 @@ def Courses(request, courseName):
     else:
         courseName = '数据分析'
     courseList = MyCourse.objects.all().filter(courseType = courseName).order_by('-updateDate')
-
+    for mycourses in courseList:
+        html = pq(mycourses.description)  # 使用pq方法解析html内容
+        mycourses.mytxt = pq(html)('p').text()  # 截取html段落文字
     p = Paginator(courseList, 5)
     if p.num_pages <= 1:
         pageData = ''
@@ -73,8 +75,7 @@ def Courses(request, courseName):
             'courseName' : courseName,
             'courseList' :courseList,
             'pageData':pageData,
-        }
-    )
+        })
     #     data = {
     #          'active_menu' : 'Courses',
     #         'sub_menu' : submenu,
@@ -95,3 +96,13 @@ def coursesDetail(request, id):
     #                      'active_menu': 'course',
     #                      'mycourses' : mycourses,
     # })
+
+def search(request):
+    keyword = request.GET.get('keyword')
+    courseList = MyCourse.objects.filter(title__icontains=keyword)
+    courseName = "关于 " + "\"" + keyword + "\"" + " 的搜索结果"
+    return render(request, 'searchList.html', {
+        'active_menu': 'Courses',
+        'newName': courseName,
+        'newList': courseList,
+    })

@@ -1,4 +1,9 @@
-
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+首页
+{% endblock %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,29 +26,29 @@
                 </button>
             </div>
             <div class="collapse navbar-collapse" id="bs-example">
-                <ul class="nav navbar-nav" style="width: 100%;"></ul>
-                <li class="active nac-top">
-                    <a href="{% url 'home' %}">首页</a>
-                </li>
-                <li class="dropdown nav-top">
-                    <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
-                        课程列表    
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'courseApp:Courses' 'basic' %}">基础教程</a></li>
-                        <li><a href="{% url 'courseApp:Courses' 'higher' %}">高阶教程</a></li>
-                        <li><a href="{% url 'courseApp:Courses' 'data' %}">数据分析</a></li>
-                    </ul>
-                </li>
-                <li class="dropdown nav-top">
-                    <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
-                        习题列表  
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'execriseApp:basic' %}">基础</a></li>
-                        <li><a href="{% url 'execriseApp:higher' %}">高阶</a></li>
-                            <li><a href="{% url 'execriseApp:data' %}">数据分析</a></li>
+                <ul class="nav navbar-nav" style="width: 100%;">
+                    <li class="active nac-top">
+                        <a href="{% url 'home' %}">首页</a>
+                    </li>
+                    <li class="dropdown nav-top">
+                        <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                            课程列表    
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'courseApp:Courses' 'basic' %}">基础教程</a></li>
+                            <li><a href="{% url 'courseApp:Courses' 'higher' %}">高阶教程</a></li>
+                            <li><a href="{% url 'courseApp:Courses' 'data' %}">数据分析</a></li>
                         </ul>
+                    </li>
+                    <li class="dropdown nav-top">
+                        <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                            习题列表  
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'execriseApp:basic' %}">基础</a></li>
+                            <li><a href="{% url 'execriseApp:higher' %}">高阶</a></li>
+                                <li><a href="{% url 'execriseApp:data' %}">数据分析</a></li>
+                            </ul>
                     </li>
                     <li class="dropdown nav-top">
                         <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
@@ -54,9 +59,10 @@
                             <li><a href="{% url 'commitApp:new' %}">最新评论</a></li>
                         </ul>
                     </li>
-                    
-                </div>        
-            </div>
-        </nav>
+                </ul>  
+            </div>        
+        </div>
+    </nav>
 </body>
 </html>
+{% endblock %}

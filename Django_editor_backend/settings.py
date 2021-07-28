@@ -14,7 +14,20 @@ SECRET_KEY = ')!-z(9n^yts=@wa080pf+rb=(*!@7s5)g!k&8r7axe286surg$'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*',]
-
+"""
+Django 缓存系统 by Shay
+节省数据 渲染时间
+"""
+CACHES = {
+    'default':{
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table_home',
+        'TIMEOUT': 600, #超市时间
+        'OPTIONS': {
+            'MAX_ENTRIES': 5000   #最大并发量
+        }
+    }
+}
 
 # Application definition
 
@@ -31,7 +44,17 @@ INSTALLED_APPS = [
     'execriseApp',
     'online_editor',
     'DjangoUeditor',
+    'haystack',
 ]
+
+HAYSTACK_CONNECTIONS = {
+    'default' : {
+        'ENGINE' : 'courseApp.whoosh_backend.WhooshEngine',
+        'PATH' : os.path.join(BASE_DIR, 'whoosh_index')
+    },
+}
+HAYSTACK_SEARCH_RESULT_PER_PAGE = 10
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor' #更新索引的条件： 每有一个新的课程更新的时候
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

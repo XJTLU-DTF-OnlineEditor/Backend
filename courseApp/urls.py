@@ -10,5 +10,6 @@ urlpatterns =[
     # path('data/$', views.data, name='data'), #数据分析
     # path('higher/$', views.higher, name='higher'), #进阶教程
     path('Courses/<str:courseName>/', views.Courses, name = 'Courses'),
-    path('coursesDetail/<int:id>/', views.coursesDetail, name = 'coursesDetail')
+    path('coursesDetail/<int:id>/', views.coursesDetail, name = 'coursesDetail'),
+    path('search/', views.search, name='search'),
 ]

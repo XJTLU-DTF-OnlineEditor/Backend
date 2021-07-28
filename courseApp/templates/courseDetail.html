@@ -1,12 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+课程详情
+{% endblock %}
+{% block content %}
+
+<!-- 主体内容 -->
+<div class="container">
+    <div class="model-details-product-title">
+        {{mycourses.title}}
+        <div class="model-foot">发布时间：{{mycourses.publishDate|date:"Y-m-d"}} &nbsp;&nbsp;
+            浏览次数：{{mycourses.views}}</div>
+    </div>
+    <div class="model-details">
+        {{ mycourses.description | safe }}
+    </div>
+</div>
+{% endblock %}

@@ -52,11 +52,11 @@
                 </div>
             </div>
             <div class="model-details">
-                {% for mycourses in newList %}
-                <div class="news-model">
+                {% for mycourses in courseList %}
+                <div class="courses-model">
                     <!-- <img src="{% static 'img/newsicon.gif' %}"> -->
                     <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>
-                    <span>【{{mycourses.publishDate|date:"Y-m-d"}}】</span>
+                    <span>【{{mycourses.updateDate|date:"Y-m-d"}}】</span>
                     <p>
                         <!-- 添加新闻简要说明 -->
                         {{mycourses.mytxt|truncatechars:"110"}}...

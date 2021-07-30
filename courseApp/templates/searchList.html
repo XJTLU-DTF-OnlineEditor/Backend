@@ -32,7 +32,7 @@
             {% for mycourse in courseList %}
             <div class="news-model">
 
-                <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mynew.title}}</b></a>
+                <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>
                 <span>【{{mycourses.publishDate|date:"Y-m-d"}}】</span>
             </div>
             {% endfor %}

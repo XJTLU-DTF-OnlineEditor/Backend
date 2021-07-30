@@ -19,7 +19,7 @@ class MyCourse(models.Model):
                                 height = 300,
                                 width = 1000,
                                 # imagePath = 'course/images/', 后续加入课程图像
-                                # filePath = 'course/files/',   课程路径添加
+                                filePath = 'course/files/',   #课程路径添加
                                 )
     courseType = models.CharField(choices=COURSE_CHOICES,
                                   max_length=50,

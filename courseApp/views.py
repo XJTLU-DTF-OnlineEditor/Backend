@@ -20,6 +20,7 @@ def Courses(request, courseName):
     for mycourses in courseList:
         html = pq(mycourses.description)  # 使用pq方法解析html内容
         mycourses.mytxt = pq(html)('p').text()  # 截取html段落文字
+    #分页函数
     p = Paginator(courseList, 5)
     if p.num_pages <= 1:
         pageData = ''
@@ -85,12 +86,12 @@ def Courses(request, courseName):
     #     }
     # return JsonResponse(data)
 def coursesDetail(request, id):
-    mycourses = get_object_or_404(Courses, id = id)
+    mycourses = get_object_or_404(MyCourse, id = id)
     mycourses.views += 1
     mycourses.save()
     return render(request, 'courseDetail.html', {
             'active_menu': 'Courses',
-            'mycourses' : mycourses, 
+            'mycourses': mycourses, 
     })
     # return JsonResponse({
     #                      'active_menu': 'course',

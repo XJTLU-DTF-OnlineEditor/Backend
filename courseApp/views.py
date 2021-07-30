@@ -104,6 +104,6 @@ def search(request):
     courseName = "关于 " + "\"" + keyword + "\"" + " 的搜索结果"
     return render(request, 'searchList.html', {
         'active_menu': 'Courses',
-        'newName': courseName,
-        'newList': courseList,
+        'courseName': courseName,
+        'courseList': courseList,
     })

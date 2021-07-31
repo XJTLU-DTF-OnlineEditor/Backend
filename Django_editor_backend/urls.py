@@ -22,10 +22,10 @@ from homeApp.views import home
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name = 'home'), #添加各级目录
-    path('online_editor/', include('online_editor.urls')),
     path('courseApp/', include('courseApp.urls')),
     path('execriseApp/', include('execriseApp.urls')),
     path('commitApp/', include('commitApp.urls')),
     path('ueditor/',include('DjangoUeditor.urls')),
     path('search/', include('haystack.urls')),
+    # path('online_editor/', include('online_editor.urls')),
 ]

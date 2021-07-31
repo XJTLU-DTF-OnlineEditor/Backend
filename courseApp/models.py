@@ -29,6 +29,11 @@ class MyCourse(models.Model):
                                       verbose_name='更新时间')
     views = models.PositiveIntegerField('浏览量', default=0)
 
+    topic_id = models.CharField(max_length=20, null=True)
+
+    subtopic_id = models.CharField(max_length=20, null=True)
+    subtopic_title = models.CharField(max_length=32, null=True)
+
     def __str__(self):
         return self.title
     
@@ -36,3 +41,7 @@ class MyCourse(models.Model):
         ordering = ['-updateDate']
         verbose_name = '课程'
         verbose_name_plural = verbose_name
+class Topic(models.Model):
+    topic_id = models.CharField(primary_key=True, max_length=20)
+    topic_title = models.CharField(max_length=20)
+    topic_content = models.TextField(null=True) #introduction of the topic

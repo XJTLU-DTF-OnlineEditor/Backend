@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import MyCourse
+from . models import MyCourse,Topic
 
 admin.site.site_header = "Python 在线学习后台管理网站"
 admin.site.site_title = "Python 在线学习后台管理网站"
@@ -12,3 +12,8 @@ class MyCourseAdmin(admin.ModelAdmin):
     style_fields = {'description':'ueditor'}
 
 admin.site.register(MyCourse,MyCourseAdmin)
+
+class TopicAdmin(admin.ModelAdmin):
+    style_fields = {'topic_content':'ueditor'}
+
+admin.site.register(Topic,TopicAdmin)

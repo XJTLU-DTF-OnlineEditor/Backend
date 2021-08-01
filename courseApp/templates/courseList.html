@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block title %}
-{{courseName}}
+{{topic_title}}
 {% endblock %}
 
 {% block content %}
@@ -38,7 +38,7 @@
         <!-- 说明文字和图片 -->
         <div class="col-md-9">
             <div class="model-details-title">
-                {{courseName}}
+                {{topic_title}}
                 <div class="col-md-7 hidden-xs model-details-title-search">
                     <form method="get" action="{% url 'haystack_search' %}">
                         {% csrf_token %}
@@ -56,7 +56,7 @@
                 <div class="courses-model">
 
                     <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>
-                    <span>【{{mycourses.updateDate|date:"Y-m-d"}}】</span>
+                    <span>【{{mycourses.update_date|date:"Y-m-d"}}】</span>
                     <p>
                         <!-- 添加课程简要说明 -->
                         {{mycourses.mytxt|truncatechars:"110"}}...

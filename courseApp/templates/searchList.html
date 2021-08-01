@@ -33,7 +33,7 @@
             <div class="courses-model">
 
                 <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>
-                <span>【{{mycourses.updateDate|date:"Y-m-d"}}】</span>
+                <span>【{{mycourses.update_date|date:"Y-m-d"}}】</span>
             </div>
             {% endfor %}
         </div>

@@ -36,7 +36,7 @@
                 <a href="{% url 'courseApp:coursesDetail' result.object.id %}">
                     <b>{{result.object.title}}</b>
                 </a>
-                <span>【{{result.object.updateDate|date:"Y-m-d"}}】</span>
+                <span>【{{result.object.update_date|date:"Y-m-d"}}】</span>
                 <!-- 添加课程简要说明 -->
                 <p class="courses-search-model">
                     {% highlight result.object.description with query %}

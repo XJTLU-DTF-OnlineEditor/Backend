@@ -24,13 +24,13 @@
             <div class="model-list">
                 <ul class="list-group">
                     <li class="list-group-item" id='basic'>
-                        <a href="{% url 'courseApp:Courses' 'basic' %}">基础课程</a>
+                        <a href="{% url 'courseApp:Courses' 'basic' %}">Python3 教程</a>
                     </li>
                     <li class="list-group-item" id='heigher'>
-                        <a href="{% url 'courseApp:Courses' 'heigher' %}">高阶课程</a>
+                        <a href="{% url 'courseApp:Courses' 'heigher' %}">Python3 高阶教程</a>
                     </li>
                     <li class="list-group-item" id='data'>
-                        <a href="{% url 'courseApp:Courses' 'data' %}">数据分析</a>
+                        <a href="{% url 'courseApp:Courses' 'data' %}">Python3 待定</a>
                     </li>
                 </ul>
             </div>
@@ -40,7 +40,8 @@
             <div class="model-details-title">
                 {{topic_title}}
                 <div class="col-md-7 hidden-xs model-details-title-search">
-                    <form method="get" action="{% url 'haystack_search' %}">
+                    <form method="get" action="{% url 'haystack_search' %}"> 
+                        <!-- 全局搜索用后端haystack_search -->
                         {% csrf_token %}
                         <div class="input-group">
                             <input type="text" name="q" class="form-control" placeholder="请输入关键词" required />
@@ -52,13 +53,16 @@
                 </div>
             </div>
             <div class="model-details">
-                {% for mycourses in courseList %}
+                {% for mycourses in course_list %}
                 <div class="courses-model">
 
                     <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>
                     <span>【{{mycourses.update_date|date:"Y-m-d"}}】</span>
                     <p>
-                        <!-- 添加课程简要说明 -->
+                        <!--
+                        课程简要说明
+                        设置多少个预览字符
+                         -->
                         {{mycourses.mytxt|truncatechars:"110"}}...
                     </p>
                 </div>

@@ -25,6 +25,7 @@
                     <span>导航栏</span>
                 </button>
             </div>
+            
             <div class="collapse navbar-collapse" id="bs-example">
                 <ul class="nav navbar-nav" style="width: 100%;">
                     <li class="active nac-top">
@@ -32,12 +33,31 @@
                     </li>
                     <li class="dropdown nav-top">
                         <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
-                            课程列表    
+                            Python3 教程    
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="{% url 'courseApp:Courses' 'basic' %}">基础教程</a></li>
-                            <li><a href="{% url 'courseApp:Courses' 'higher' %}">高阶教程</a></li>
-                            <li><a href="{% url 'courseApp:Courses' 'data' %}">数据分析</a></li>
+                            <li><a href="{% url 'courseApp:Courses' 'basic' %}">Python3 教程</a></li>
+                            <li><a href="{% url 'courseApp:Courses' 'higher' %}">Python3 高阶教程</a></li>
+                            <li><a href="{% url 'courseApp:Courses' 'data' %}">Python3 待定</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown nav-top">
+                        <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                            Python3 财务分析   
+                        </a>
+                        <ul class="dropdown-menu">
+
+                            <li><a href="{% url 'courseApp:Courses' 'data' %}">Python3 待定</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown nav-top">
+                        <a href="#" class="dropdown-toggle on" data-toggle="dropdown">
+                            Python3 数据处理  
+                        </a>
+                        <ul class="dropdown-menu">
+
+                            <li><a href="{% url 'courseApp:Courses' 'data' %}">Python3 待定</a></li>
                         </ul>
                     </li>
                     <li class="dropdown nav-top">
@@ -47,7 +67,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="{% url 'execriseApp:basic' %}">基础</a></li>
                             <li><a href="{% url 'execriseApp:higher' %}">高阶</a></li>
-                                <li><a href="{% url 'execriseApp:data' %}">数据分析</a></li>
+                                <li><a href="{% url 'execriseApp:data' %}">Python3 待定</a></li>
                             </ul>
                     </li>
                     <li class="dropdown nav-top">
@@ -60,7 +80,10 @@
                         </ul>
                     </li>
                 </ul>  
-            </div>        
+            
+            
+            </div>    
+                
         </div>
     </nav>
 </body>

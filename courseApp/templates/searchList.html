@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="model-details">
-            {% for mycourse in courseList %}
+            {% for mycourse in course_list %}
             <div class="courses-model">
 
                 <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>

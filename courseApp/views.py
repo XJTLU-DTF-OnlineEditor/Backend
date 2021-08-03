@@ -32,29 +32,30 @@ class MyCourseEncoder(json.JSONEncoder ):
 
 """
 
-render 形式返回课程页面
+render 形式返回课程页面 备用如果想运行把1删除掉
+有列表分页功能（如有需要
 
 """
 def Courses1(request, topic_title):
     if request.method == 'GET':
         submenu = topic_title
         if topic_title == 'basic':
-            topic_title = '基础课程'
+            topic_title = 'Python3 教程'
         elif topic_title == 'heigher':
-            topic_title = '高阶课程'
+            topic_title = 'Python3 高阶教程'
         else:
-            topic_title = '数据分析'
-        courseList = MyCourse.objects.all().filter(topic_name = topic_title).order_by('-update_date')
-        for mycourses in courseList:
+            topic_title = 'Python3 待定'
+        course_list = MyCourse.objects.all().filter(topic_name = topic_title).order_by('update_date')
+        for mycourses in course_list:
             html = pq(mycourses.description)  # 使用pq方法解析html内容
             mycourses.mytxt = pq(html)('p').text()  # 截取html段落文字
     # 分页函数
-        p = Paginator(courseList, 5)
+        p = Paginator(course_list, 5)
         if p.num_pages <= 1:
             pageData = ''
         else:
             page = int(request.GET.get('page',1))
-            courseList = p.page(page)
+            course_list = p.page(page)
             left = []
             right = []
             left_has_more = False
@@ -99,18 +100,18 @@ def Courses1(request, topic_title):
             }
 
         return render(
-            request, 'courseList.html', {
+            request, 'course_list.html', {
                 "error_code": 200,
                 "msg": 'success',
                 'active_menu' : 'Courses',
                 'sub_menu' : submenu,
                 'topic_title' : topic_title,
-                'courseList' :courseList,
+                'course_list' :course_list,
                 'pageData':pageData,
             })
     else:
        return render(
-            request, 'courseList.html', {
+            request, 'course_list.html', {
                 "error_code": 400,
                 "msg": 'INVALID REQUEST',
                 'active_menu' : 'Courses',
@@ -118,20 +119,24 @@ def Courses1(request, topic_title):
             })
   
    
-
+"""
+还处于测试阶段并未成功插入page相关数据 因为不会处理在Json返回的报错
+具体实现将数据库中符合条件的课程按创建时间升序排列
+返回给前端嵌套的列表数据
+"""
 
 def Courses(request, topic_title):
     if request.method == 'GET':
         submenu = topic_title
         if topic_title == 'basic':
-            topic_title = '基础课程'
+            topic_title = 'Python3 教程'
         elif topic_title == 'heigher':
-            topic_title = '高阶课程'
+            topic_title = 'Python3 高阶教程'
         else:
-            topic_title = '数据分析'
-        courseList = serializers.serialize("json",MyCourse.objects.all()
+            topic_title = 'Python3 待定'
+        course_list = serializers.serialize("json",MyCourse.objects.all() #操作过程将具体的数据序列化这里会被转义返回时需要loads()去转义
                                             .filter(topic_name = topic_title)
-                                            .order_by('-update_date'))
+                                            .order_by('update_date'))
         result = {
             "error_code": 200,
             "msg": 'success',
@@ -139,7 +144,7 @@ def Courses(request, topic_title):
             'sub_menu' : submenu,
             'topic_title' : topic_title,
             # 'topic_content':Topic.objects.get(topic_title=topic_title).topic_content, #还没建
-            'courseList' :json.loads(courseList),
+            'course_list' :json.loads(course_list),
 
 
         }
@@ -154,22 +159,23 @@ def Courses(request, topic_title):
 render形式的返回
 节省对应到html抛去不必要变量
 节省工作量
+需要用的时候将1去掉
 """
-# def coursesDetail(request, subtopic_id):
-#     if request.method == 'GET':
-#         mycourses = get_object_or_404(MyCourse, subtopic_id = subtopic_id)
-#         mycourses.views += 1
-#         mycourses.save()
-#         return render(request, 'courseDetail.html', {
-#                 'active_menu': 'Courses',
-#                 'mycourses': mycourses, 
-#         })
-#     else:
-#         result={
-#             "error_code": 400,
-#             'msg':'INVALID REQUEST'
-#         }
-#         return JsonResponse(result)
+def coursesDetail1(request, id):
+    if request.method == 'GET':
+        mycourses = get_object_or_404(MyCourse, id = id) # 如果ID错误自动返回404
+        mycourses.views += 1
+        mycourses.save()
+        return render(request, 'courseDetail.html', {
+                'active_menu': 'Courses',
+                'mycourses': mycourses, 
+        })
+    else:
+        result={
+            "error_code": 400,
+            'msg':'INVALID REQUEST'
+        }
+        return JsonResponse(result)
 
 def coursesDetail(request, id):
     if request.method == 'GET':
@@ -199,39 +205,40 @@ def coursesDetail(request, id):
 """
 搜索函数
 render 版本和 JsonResponse版本差别不大
+需要用的时候将1去掉
 """
 
-# def search(request):
-#     if request.method == 'GET':
-#         keyword = request.GET.get('keyword') #获取关键词
-#         courseList = MyCourse.objects.filter(title__icontains=keyword) #过滤器
-#         topic_title = "关于 " + "\"" + keyword + "\"" + " 的搜索结果"
-#         return render(request, 'searchList.html', {
-#             "error_code": 200,
-#             "msg": 'success',
-#             'active_menu': 'Courses',
-#             'topic_title': topic_title,
-#             'courseList': courseList,
-#         })
-#     else:
-#         result={
-#             "error_code": 400,
-#             'msg':'INVALID REQUEST'
-#         }
-#         return JsonResponse(result)
+def search1(request):
+    if request.method == 'GET':
+        keyword = request.GET.get('keyword') #获取关键词
+        course_list = MyCourse.objects.filter(title__icontains=keyword) #过滤器
+        topic_title = "关于 " + "\"" + keyword + "\"" + " 的搜索结果"
+        return render(request, 'searchList.html', {
+            "error_code": 200,
+            "msg": 'success',
+            'active_menu': 'Courses',
+            'topic_title': topic_title,
+            'course_list': course_list,
+        })
+    else:
+        result={
+            "error_code": 400,
+            'msg':'INVALID REQUEST'
+        }
+        return JsonResponse(result)
 
 
 def search(request):
     if request.method == 'GET':
         keyword = request.GET.get('keyword') #获取关键词
-        courseList = MyCourse.objects.filter(title__icontains=keyword) #过滤器
-        topic_title = "关于 " + "\"" + keyword + "\"" + " 的搜索结果"
+        course_list = MyCourse.objects.filter(title__icontains=keyword) #过滤器
+        search_title = "关于 " + "\"" + keyword + "\"" + " 的搜索结果"
         result = {
             "error_code": 200,
             "msg": 'success',
             'active_menu': 'Courses',
-            'courseName': topic_title,
-            'courseList': courseList,
+            'search_title': search_title,
+            'course_list': course_list,
         }
         return JsonResponse(result, safe=False)
     else:

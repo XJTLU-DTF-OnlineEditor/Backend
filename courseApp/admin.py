@@ -13,6 +13,9 @@ class MyCourseAdmin(admin.ModelAdmin):
 
 admin.site.register(MyCourse,MyCourseAdmin)
 
+"""
+topic 的models还未规范需要与kiki确定才能部署
+"""
 class TopicAdmin(admin.ModelAdmin):
     style_fields = {'topic_content':'ueditor'}
 

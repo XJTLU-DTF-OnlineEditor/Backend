@@ -14,3 +14,5 @@ https://github.com/besnik/simple-python-online-editor/blob/master/run_in_docker.
 ## create Django cache
 
 type 'python manage.py createcachetable cache_table_home' by terminal under the project root
+use "pip install -r requirements.txt" to install needed pip under the root file
+before using the courseApp you need "python manage.py makemigrations" & "python manage.py migrate" to rebuild the database 

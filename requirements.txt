@@ -20,7 +20,7 @@ PyMySQL==1.0.2
 pyquery==1.4.0
 python-docx==0.8.7
 pytz==2019.2
-qrcode==6.1
+qrcode==6.1 // 可以加入老师的公众号二维码？
 requests==2.22.0
 six==1.12.0
 sqlparse==0.3.0

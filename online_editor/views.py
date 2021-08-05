@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from .core import run_in_docker
-import json, requests, os
+import json, os
 from .models import Codes
 from django.db import *
 

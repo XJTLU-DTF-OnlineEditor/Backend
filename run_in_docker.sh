@@ -11,4 +11,3 @@ echo "done"
 
 # > file redirects stdout to file
 # 2>&1 redirect stderr to stdout - we want this to get also error messages of compiler
-

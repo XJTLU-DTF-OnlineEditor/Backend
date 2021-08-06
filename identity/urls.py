@@ -10,5 +10,7 @@ from identity import views
 
 app_name = 'identity'
 urlpatterns = [
-    path('register/', views.user_register)
+    path('register/', views.user_register),
+    path('login/', views.user_login),
+    path('logout/', views.user_logout)
 ]

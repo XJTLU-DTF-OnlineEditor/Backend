@@ -119,5 +119,6 @@ STATICFILES_DIRS = (
 
 # Code files
 INPUT_FILE_PATH = os.path.abspath("/tmp/code.py")
+USER_INPUT_PATH = os.path.abspath("/tmp/input.txt")
 OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
 RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")

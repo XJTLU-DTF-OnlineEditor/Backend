@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+课程详情
+{% endblock %}
+{% block content %}
+
+<!-- 主体内容 -->
+<div class="container">
+    <div class="model-details-product-title">
+        {{mycourses.title}}
+        <div class="model-foot">发布时间：{{mycourses.update_date|date:"Y-m-d"}} &nbsp;&nbsp;
+            浏览次数：{{mycourses.views}}</div>
+    </div>
+    <div class="model-details">
+        {{ mycourses.description | safe }}
+    </div>
+</div>
+{% endblock %}

@@ -13,8 +13,21 @@ SECRET_KEY = ')!-z(9n^yts=@wa080pf+rb=(*!@7s5)g!k&8r7axe286surg$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['*',]
+"""
+Django 缓存系统 by Shay
+节省数据 渲染时间
+"""
+CACHES = {
+    'default':{
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table_home',
+        'TIMEOUT': 600, #超市时间
+        'OPTIONS': {
+            'MAX_ENTRIES': 5000   #最大并发量
+        }
+    }
+}
 
 # Application definition
 
@@ -25,10 +38,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'homeApp', #新加主页
+    'courseApp',
+    'commitApp',
+    'execriseApp',
     'online_editor',
+    'DjangoUeditor',
+    'haystack',
     'identity',
-
 ]
+
+HAYSTACK_CONNECTIONS = {
+    'default' : {
+        'ENGINE' : 'courseApp.whoosh_backend.WhooshEngine',
+        'PATH' : os.path.join(BASE_DIR, 'whoosh_index')
+    },
+}
+HAYSTACK_SEARCH_RESULT_PER_PAGE = 10
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor' #更新索引的条件： 每有一个新的课程更新的时候
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -45,7 +72,7 @@ ROOT_URLCONF = 'Django_editor_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], #设置共享路径
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,3 +149,6 @@ INPUT_FILE_PATH = os.path.abspath("/tmp/code.py")
 USER_INPUT_PATH = os.path.abspath("/tmp/input.txt")
 OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
 RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")
+
+MEDIA_URL = '/media/' #设置保存路径
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}
+{{topic_title}}
+{% endblock %}
+
+{% block content %}
+<!-- <link href="http://cdn.bootcss.com/bootstrap/3.3.0/css/.css" rel="stylesheet"> -->
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- <img class="img-responsive model-img" src="{% static 'img/.jpg' %}"> -->
+    </div>
+</div>
+<!-- 主体内容 -->
+<div class="container">
+    <div class="row row-3">
+        <!-- 侧边导航栏 -->
+        <div class="col-md-3">
+            <div class="model-title">
+                课程
+            </div>
+            <div class="model-list">
+                <ul class="list-group">
+                    <li class="list-group-item" id='basic'>
+                        <a href="{% url 'courseApp:Courses' 'basic' %}">Python3 教程</a>
+                    </li>
+                    <li class="list-group-item" id='heigher'>
+                        <a href="{% url 'courseApp:Courses' 'heigher' %}">Python3 高阶教程</a>
+                    </li>
+                    <li class="list-group-item" id='data'>
+                        <a href="{% url 'courseApp:Courses' 'data' %}">Python3 待定</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- 说明文字和图片 -->
+        <div class="col-md-9">
+            <div class="model-details-title">
+                {{topic_title}}
+                <div class="col-md-7 hidden-xs model-details-title-search">
+                    <form method="get" action="{% url 'haystack_search' %}"> 
+                        <!-- 全局搜索用后端haystack_search -->
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="请输入关键词" required />
+                            <span class="input-group-btn">
+                                <input type="submit" class="btn btn-default" value="查询" />
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="model-details">
+                {% for mycourses in course_list %}
+                <div class="courses-model">
+
+                    <a href="{% url 'courseApp:coursesDetail' mycourses.id %}"><b>{{mycourses.title}}</b></a>
+                    <span>【{{mycourses.update_date|date:"Y-m-d"}}】</span>
+                    <p>
+                        <!--
+                        课程简要说明
+                        设置多少个预览字符
+                         -->
+                        {{mycourses.mytxt|truncatechars:"110"}}...
+                    </p>
+                </div>
+                {% endfor %}
+
+                {% if pageData %}
+                <div class="paging">
+                    <ul id="pages" class="pagination">
+                        {% if pageData.first %}
+                        <li><a href="?page=1">1</a></li>
+                        {% endif %}
+                        {% if pageData.left %}
+                        {% if pageData.left_has_more %}
+                        <li><span>...</span></li>
+                        {% endif %}
+                        {% for i in pageData.left %}
+                        <li><a href="?page={{i}}">{{i}}</a></li>
+                        {% endfor %}
+                        {% endif %}
+                        <li class="active"><a href="?page={{pageData.page}}">
+                                {{pageData.page}}</a></li>
+                        {% if pageData.right %}
+                        {% for i in pageData.right %}
+                        <li><a href="?page={{i}}">{{i}}</a></li>
+                        {% endfor %}
+                        {% if pageData.right_has_more %}
+                        <li><span>...</span></li>
+                        {% endif %}
+                        {% endif %}
+                        {% if pageData.last %}
+                        <li><a href="?page={{pageData.total_pages}}">
+                                {{pageData.total_pages}}</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

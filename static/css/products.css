@@ -1,0 +1,26 @@
+.model-details .row-4
+{
+	Margin-top: 20px;
+}
+.model-details .row-5
+{
+	border:none;
+}
+/* 分页控件样式 */
+.paging{
+	text-align:center;
+}
+.pagination .active a{
+	background-color:#005197;
+	border-color:#005197;
+}
+
+.model-details-product-title{
+	padding:15px 0px;
+	font-size:18px;
+	border-bottom:1px #005197 solid; 
+	color:#005197;
+	margin-bottom:10px;
+	margin-top:10px;
+	text-align:center;
+}

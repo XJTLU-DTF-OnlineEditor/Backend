@@ -1,0 +1,110 @@
+/* 欢迎咨询页面样式 */
+.contact-left h1 strong {
+	display: block;
+	color: #777;
+	font-size: 1.6rem;
+  }
+  .contact-left h1 span {
+	display: block;
+	font-size: 1.2rem;
+	font-weight: 500;
+	margin-top: 10px;
+  }
+  .contact-left ul {
+	padding: 0;
+  }
+  .contact-left li {
+	display: block;
+	width: 100%;
+	padding: 0.5rem;
+	color: #777;
+	margin-top: 17px;
+  }
+  .contact-left li a {
+	color: #777;
+  }
+
+  /* 手风琴折叠面板样式 */
+  #accordion a:hover,a:focus{
+    text-decoration: none;
+    outline: none;
+}
+#accordion{
+    padding-right: 24px;
+    padding-left: 24px;
+    z-index: 1;
+}
+#accordion .panel{
+    border: none;
+    box-shadow: none;
+}
+#accordion .panel-heading{
+    padding: 0;
+    border-radius: 0;
+    border: none;
+}
+#accordion .panel-title{
+    padding: 0;
+}
+#accordion .panel-title a{
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    background: #005197;
+    color: #fff;
+    padding: 15px 25px;
+    position: relative;
+    margin-left: -24px;
+    transition: all 0.3s ease 0s;
+}
+#accordion .panel-title a.collapsed{
+    background: #2e516d;
+    color: #fff;
+    margin-left: 0;
+    transition: all 0.3s ease 0s;
+}
+#accordion .panel-title a:before{
+    content: "";
+    border-left: 24px solid #005197;
+    border-top: 24px solid transparent;
+    border-bottom: 24px solid transparent;
+    position: absolute;
+    top: 0;
+    right: -24px;
+    transition: all 0.3s ease 0s;
+}
+#accordion .panel-title a.collapsed:before{
+    border-left-color: #2e516d;
+}
+#accordion .panel-title a:after{
+    content: "\e133";
+    font-family: 'Glyphicons Halflings';
+    position: absolute;
+    top: 30%;
+    right: 15px;
+    font-size: 18px;
+    color: #fff;
+ 
+}
+#accordion .panel-title a.collapsed:after{
+    content: "\e134";
+    color: #fff;
+}
+#accordion .panel-collapse{
+    position: relative;
+}
+#accordion .panel-collapse.in:before{
+    content: "";
+    border-right: 24px solid rgb(146, 143, 143);
+    border-bottom: 18px solid transparent;
+    position: absolute;
+    top: 0;
+    left: -24px;
+}
+#accordion .panel-body{
+    font-size: 14px;
+    color: #333;
+    background: #e4e4e4;
+    border-top: none;
+    z-index: 1;
+}

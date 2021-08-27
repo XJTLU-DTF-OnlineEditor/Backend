@@ -1,5 +1,7 @@
 from os import path
 from django.apps import AppConfig
+'''import pymysql
+pymysql.install_as_MySQLdb()'''
 #init editor
 VERBOSE_APP_NAME = 'Python 在线编译器'
 

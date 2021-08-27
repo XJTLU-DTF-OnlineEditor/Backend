@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'online_editor',
     'DjangoUeditor',
     'haystack',
+    'identity',
 ]
 
 HAYSTACK_CONNECTIONS = {
@@ -91,8 +92,8 @@ WSGI_APPLICATION = 'Django_editor_backend.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        # 'ENGINE': 'django.db.backends.dummy',
+
+'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
@@ -145,6 +146,7 @@ STATICFILES_DIRS = (
 
 # Code files
 INPUT_FILE_PATH = os.path.abspath("/tmp/code.py")
+USER_INPUT_PATH = os.path.abspath("/tmp/input.txt")
 OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
 RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")
 

@@ -17,15 +17,17 @@ from django.urls import path
 from django.contrib import admin
 from django.conf.urls import  include, url
 from homeApp.views import home
-# from online_editor.views import index, execute
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name = 'home'), #添加各级目录
-    path('courseApp/', include('courseApp.urls')),
-    path('execriseApp/', include('execriseApp.urls')),
-    path('commitApp/', include('commitApp.urls')),
-    path('ueditor/',include('DjangoUeditor.urls')),
-    path('search/', include('haystack.urls')),
+    path('V1/courseApp/', include('courseApp.urls')),
+    path('V1/execriseApp/', include('execriseApp.urls')),
+    path('V1/commitApp/', include('commitApp.urls')),
+    path('V1/ueditor/',include('DjangoUeditor.urls')),
+    path('V1/search/', include('haystack.urls')),
+    path(r'V1/editor/', include('online_editor.urls')),
+    path(r'V1/user/', include('identity.urls')),
     # path('online_editor/', include('online_editor.urls')),
+
 ]

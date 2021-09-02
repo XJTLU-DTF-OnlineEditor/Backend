@@ -44,18 +44,18 @@ INSTALLED_APPS = [
     'execriseApp',
     'online_editor',
     'DjangoUeditor',
-    'haystack',
+    # 'haystack',
     'identity',
 ]
 
-HAYSTACK_CONNECTIONS = {
-    'default' : {
-        'ENGINE' : 'courseApp.whoosh_backend.WhooshEngine',
-        'PATH' : os.path.join(BASE_DIR, 'whoosh_index')
-    },
-}
-HAYSTACK_SEARCH_RESULT_PER_PAGE = 10
-HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor' #更新索引的条件： 每有一个新的课程更新的时候
+# HAYSTACK_CONNECTIONS = {
+#     'default' : {
+#         'ENGINE' : 'courseApp.whoosh_backend.WhooshEngine',
+#         'PATH' : os.path.join(BASE_DIR, 'whoosh_index')
+#     },
+# }
+# HAYSTACK_SEARCH_RESULT_PER_PAGE = 10
+# HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor' #更新索引的条件： 每有一个新的课程更新的时候
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -145,8 +145,8 @@ STATICFILES_DIRS = (
 )
 
 # Code files
-INPUT_FILE_PATH = os.path.abspath("/tmp/code.py")
-USER_INPUT_PATH = os.path.abspath("/tmp/input.txt")
+SOURCE_FILE_PATH = os.path.abspath("/tmp/code.py")
+INPUT_FILE_PATH = os.path.abspath("/tmp/input.txt")
 OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
 RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")
 

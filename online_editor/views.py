@@ -8,11 +8,15 @@ import json, requests, os
 from .models import Codes
 from django.db import *
 
+old_result = ''
+need_input = False
+
 def index(request):
     context = {}
     return render(request, 'index.html', context)
 
 def run(request):
+    global old_result, need_input
     # shell_script = settings.RUN_IN_DOCKER_SH_PATH
     try:
         body_unicode = request.body.decode() + "\n"
@@ -37,29 +41,38 @@ def run(request):
             "msg": "Server does not understand the requested syntax"
         }
         return JsonResponse(response, safe=False)
+    finally:
+        old_result = ''
 
     errors = ""
     result = ""
     error_code = 200
     msg = "success"
+    source_file = settings.SOURCE_FILE_PATH
 
-    # 如果没有编译
     if input_type == "Split" or input_type == "Interactive":
         try:
-            result = run_in_docker(source,input, input_type,terminate)
+            result, need_input = run_in_docker(source,input, input_type,terminate)
+            result = result.replace(source_file, "source")
+            print('2222',old_result)
+            if need_input:
+                result = result.replace(old_result, "")
             if terminate:
                 result = ''
+                need_input = False
+            old_result += result
         except ValueError as r:
             error_code = 410
             msg = " (Not yet implemented) Server has not implemented the function, Please check your input."
             errors = "%s" %r
+            old_result = ''
         except Exception as r:  # 处理运行时的错误并将错误存入数据库
             error_code = 500
             msg = " Server has encountered error, cannot resolve request"
             errors = "运行时出现错误: %s" % r
+            old_result = ''
         finally:  # 将数据存入数据库
-            print(result)
-            # result = result.replace(source_file, "source")
+            # old_result += result
             # print(result)
             code_response = Codes.objects.create(  # 存入数据库
                 code_id=id,
@@ -71,6 +84,7 @@ def run(request):
             )
             code_response.save()
     else:
+        old_result = ''
         response = {
             "error_code": 400,
             "msg": "Server does not understand the requested syntax"
@@ -85,10 +99,12 @@ def run(request):
             'request_status': "success",
             'errors': errors,
             'time_limit': time_limit,
-            'compile_status': True,
+            # 'compile_status': True,
             'run_status': "OK",
             'Output': result,
-            'id': id, }
+            'id': id,
+            'need_input': need_input
+        }
     }
     return JsonResponse(run_data_backend)
 

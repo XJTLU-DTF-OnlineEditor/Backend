@@ -1,12 +1,9 @@
-# INSERT INTO online_editor_codes (code_id, code_result,compile_status) VALUES (1,"shuchu","true");
-from django.db.models import Model
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
 from .core import run_in_docker
-import json, requests, os
+import json
 from .models import Codes
-from django.db import *
 
 old_result = ''
 need_input = False
@@ -30,19 +27,19 @@ def run(request):
         id = request_content.get("id")
         terminate = request_content.get("terminate")
     except TimeoutError:
+        old_result = ''
         response = {
             "error_code": 408,
             "msg": " Request time out"
         }
         return JsonResponse(response, safe=False)
     except:
+        old_result = ''
         response = {
             "error_code": 400,
             "msg": "Server does not understand the requested syntax"
         }
         return JsonResponse(response, safe=False)
-    finally:
-        old_result = ''
 
     errors = ""
     result = ""
@@ -54,13 +51,15 @@ def run(request):
         try:
             result, need_input = run_in_docker(source,input, input_type,terminate)
             result = result.replace(source_file, "source")
-            print('2222',old_result)
-            if need_input:
-                result = result.replace(old_result, "")
             if terminate:
                 result = ''
+                old_result = ''
                 need_input = False
-            old_result += result
+            elif need_input:
+                res = result.replace(old_result, "")
+                old_result = result
+                result = res.rstrip() + '\n'
+
         except ValueError as r:
             error_code = 410
             msg = " (Not yet implemented) Server has not implemented the function, Please check your input."
@@ -72,8 +71,6 @@ def run(request):
             errors = "运行时出现错误: %s" % r
             old_result = ''
         finally:  # 将数据存入数据库
-            # old_result += result
-            # print(result)
             code_response = Codes.objects.create(  # 存入数据库
                 code_id=id,
                 code_content=source,

@@ -18,6 +18,7 @@ def read_output(file_name):
         return f.read()
 
 def inputin(input):
+    input = input.rstrip() + '\r\n'
     process.stdin.write(input)
     process.stdin.flush()
     time.sleep(1)
@@ -27,7 +28,7 @@ def stopContainer():
     if not isinstance(process,str):
         while process.poll() is None:
             Popen('docker stop py', shell=True)
-            time.sleep(4)
+            time.sleep(3)
         need_input = False
         Popen('docker rm py > /dev/null 2>&1', shell=True)
         process = ''
@@ -58,7 +59,7 @@ def call_docker(input, input_type):
     command = 'docker run -i --name py -v /tmp/code.py:/tmp/code.py python:3.5.2-alpine python /tmp/code.py > /tmp/code.out'
     #  2>&1 输出错误（不展现）
     try:
-        process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=STDOUT, shell=True, universal_newlines=True)
+        process = Popen(command, stdin=PIPE, stdout=None, stderr=STDOUT, shell=True, universal_newlines=True)
         time.sleep(1)
         while process.poll() is None:   # 需要输入
             if input_type == "Split":   # Split模式
@@ -91,4 +92,5 @@ def run_in_docker(source,input, input_type, terminate):
     except Exception as err:
         raise err
     return read_output(output_path), need_input
+
 #262ae7215664502738bebf6cca30813b20d139844b385f2fe90102302fb5b7db

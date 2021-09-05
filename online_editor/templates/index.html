@@ -21,36 +21,36 @@
         <form action="{% url 'online_editor:execute' %}" method="POST">
             
             <textarea style="height: 500px; margin: 0px; width: 500px;" class="u-full-width" placeholder="print('hello world')" id="code" name="code">
-def partition(arr,low,high): 
-  i = ( low-1 )         
-  pivot = arr[high]     
+def partition(arr,low,high):
+  i = ( low-1 )
+  pivot = arr[high]
 
-  for j in range(low , high): 
-
-      
-      if   arr[j] <= pivot: 
-        
-          i = i+1 
-          arr[i],arr[j] = arr[j],arr[i] 
-
-  arr[i+1],arr[high] = arr[high],arr[i+1] 
-  return ( i+1 ) 
+  for j in range(low , high):
 
 
-       
-def quickSort(arr,low,high): 
-  if low < high: 
+      if   arr[j] <= pivot:
 
-      pi = partition(arr,low,high) 
+          i = i+1
+          arr[i],arr[j] = arr[j],arr[i]
 
-      quickSort(arr, low, pi-1) 
-      quickSort(arr, pi+1, high) 
+  arr[i+1],arr[high] = arr[high],arr[i+1]
+  return ( i+1 )
 
-arr = [10, 7, 8, 9, 1, 5] 
-n = len(arr) 
-quickSort(arr,0,n-1) 
-print ("new array:") 
-for i in range(n): 
+
+
+def quickSort(arr,low,high):
+  if low < high:
+
+      pi = partition(arr,low,high)
+
+      quickSort(arr, low, pi-1)
+      quickSort(arr, pi+1, high)
+
+arr = [10, 7, 8, 9, 1, 5]
+n = len(arr)
+quickSort(arr,0,n-1)
+print ("new array:")
+for i in range(n):
     print ("%d" %arr[i]),
 
             </textarea>
@@ -89,7 +89,7 @@ for i in range(n):
     }
 
     httpRequest.onreadystatechange = execution_done_callback;
-    httpRequest.open('POST', "/execute", true);
+    httpRequest.open('POST', "run", true);
     httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
     content = (document.getElementById("code").value)

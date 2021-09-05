@@ -25,7 +25,7 @@ urlpatterns = [
     path('V1/execriseApp/', include('execriseApp.urls')),
     path('V1/commitApp/', include('commitApp.urls')),
     path('V1/ueditor/',include('DjangoUeditor.urls')),
-    path('V1/search/', include('haystack.urls')),
+    # path('V1/search/', include('haystack.urls')),
     path(r'V1/editor/', include('online_editor.urls')),
     path(r'V1/user/', include('identity.urls')),
     # path('online_editor/', include('online_editor.urls')),

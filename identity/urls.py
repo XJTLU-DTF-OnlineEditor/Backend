@@ -12,5 +12,9 @@ app_name = 'identity'
 urlpatterns = [
     path('register/', views.user_register),
     path('login/', views.user_login),
-    path('logout/', views.user_logout)
+    path('logout/', views.user_logout),
+    path('currentuser/', views.current_user),
+    path('change_password/', views.change_user_password),
+    path('icon/', views.edit_usericon),
+    path('edit_userInfo/', views.edit_userInfo)
 ]

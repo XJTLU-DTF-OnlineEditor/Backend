@@ -11,6 +11,7 @@ from typing import List
 # from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
 # from alibabacloud_tea_openapi import models as open_api_models
 # from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
+from django.http import JsonResponse
 
 
 def _exist_username(username):
@@ -18,6 +19,19 @@ def _exist_username(username):
         return True
     else:
         return False
+
+
+# required_login decorate
+def required_login(func):
+    def wrapper(request, *args, **kw):
+        if not request.user.is_authenticated:
+            msg = {
+                "status": 2,
+                "msg": "account unauthorized"
+            }
+            return JsonResponse(msg, status=401)
+        return func(request, *args, **kw)
+    return wrapper
 
 
 # class Sample:

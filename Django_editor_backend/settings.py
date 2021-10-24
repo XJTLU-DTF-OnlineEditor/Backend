@@ -1,8 +1,8 @@
-import os,sqlite3
+import os, sqlite3
+
 # from mongoengine import connect
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -13,18 +13,18 @@ SECRET_KEY = ')!-z(9n^yts=@wa080pf+rb=(*!@7s5)g!k&8r7axe286surg$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*', ]
 """
 Django 缓存系统 by Shay
 节省数据 渲染时间
 """
 CACHES = {
-    'default':{
+    'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'cache_table_home',
-        'TIMEOUT': 600, #超市时间
+        'TIMEOUT': 600,  # 超市时间
         'OPTIONS': {
-            'MAX_ENTRIES': 5000   #最大并发量
+            'MAX_ENTRIES': 5000  # 最大并发量
         }
     }
 }
@@ -38,14 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'homeApp', #新加主页
     'courseApp',
-    'commitApp',
-    'execriseApp',
     'online_editor',
-    'DjangoUeditor',
+    # 'DjangoUeditor',
     # 'haystack',
     'identity',
+    'ckeditor',
+    'ckeditor_uploader'
 ]
 
 # HAYSTACK_CONNECTIONS = {
@@ -61,7 +60,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
+    #    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -72,7 +71,7 @@ ROOT_URLCONF = 'Django_editor_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], #设置共享路径
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # 设置共享路径
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,18 +86,29 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Django_editor_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# if DEBUG == True:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+# else:
 DATABASES = {
-
-'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'online_editor',
+        'HOST': 'www.dannyhao.top',
+        'POST': 3306,
+        'USER': 'root',
+        'PASSWORD': ''
+    },
 }
-#use the SQLite
+
+# use the SQLite
 # connect('db.sqlite3')
 
 
@@ -120,7 +130,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
@@ -133,7 +142,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
@@ -150,5 +158,6 @@ INPUT_FILE_PATH = os.path.abspath("/tmp/input.txt")
 OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
 RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")
 
-MEDIA_URL = '/media/' #设置保存路径
+MEDIA_URL = '/media/'  # 设置保存路径
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+CKEDITOR_UPLOAD_PATH = 'images/'

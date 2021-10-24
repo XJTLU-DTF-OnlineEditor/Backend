@@ -5,7 +5,7 @@ Django==2.2.4
 django-cors-headers==3.7.0
 django-haystack==2.8.1
 django-widget-tweaks==1.4.8
-DjangoUeditor==1.8.143
+django-ckeditor
 docxtpl==0.11.5
 idna==2.8
 jieba==0.42.1

@@ -189,7 +189,12 @@ def exercises(request, topic_title):
 @require_http_methods(["GET"])
 def binlog(request):
     cursor = connection.cursor()
-    cursor.execute("show binlog events")
+    cursor.execute("show master status")
+    main_binlog_tuple = cursor.fetchall()
+    # print(main_binlog_tuple)
+    main_log=main_binlog_tuple[0][0]
+    # print(main_log)
+    cursor.execute("show binlog events in '" + str(main_log) + "'")
     all_result = cursor.fetchall()
     raws = len(all_result)
     last_modified_raw = 0
@@ -197,12 +202,22 @@ def binlog(request):
 
     for i in range(0, raws):
         if all_result[raws - i - 1][5] == "BEGIN":
-            last_modified_raw = i
-            print("last_modified_raw: " + str(last_modified_raw))
+            last_modified_raw = i + 1
+            # print("last_modified_raw: " + str(last_modified_raw))
             break
 
     for i in range(0, last_modified_raw):
         results.append(all_result[raws - i - 1])
     results.reverse()
-    print(list(results))
-    return JsonResponse({"result": results})
+    # print(list(results))
+    response = {
+        "binlog_file": results[0][0],
+        "server_id": results[0][3],
+        "begin_pos": results[0][1],
+        "end_pos": results[len(results)-1][4],
+        "table": results[1][5],
+        "operation": results[2][2],
+        "flags": results[2][5]
+    }
+    # print(response)
+    return JsonResponse(response)

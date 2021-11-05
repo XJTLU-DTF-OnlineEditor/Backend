@@ -8,9 +8,11 @@ from .models import Codes
 old_result = ''
 need_input = False
 
+
 def index(request):
     context = {}
     return render(request, 'index.html', context)
+
 
 def run(request):
     global old_result, need_input
@@ -49,7 +51,7 @@ def run(request):
 
     if input_type == "Split" or input_type == "Interactive":
         try:
-            result, need_input = run_in_docker(source,input, input_type,terminate)
+            result, need_input = run_in_docker(source, input, input_type, terminate)
             result = result.replace(source_file, "source")
             if terminate:
                 result = ''
@@ -63,7 +65,7 @@ def run(request):
         except ValueError as r:
             error_code = 410
             msg = " (Not yet implemented) Server has not implemented the function, Please check your input."
-            errors = "%s" %r
+            errors = "%s" % r
             old_result = ''
         except Exception as r:  # 处理运行时的错误并将错误存入数据库
             error_code = 500
@@ -104,10 +106,3 @@ def run(request):
         }
     }
     return JsonResponse(run_data_backend)
-
-
-
-
-
-
-

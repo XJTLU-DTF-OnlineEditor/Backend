@@ -11,6 +11,8 @@ import json
 from datetime import date, datetime
 from django.core import serializers  # JsonResponse用来将QuerySet序列化
 
+global binlogEnd, binlogFile
+
 """
 如果用JsonResponse处理上传日期需要对相应update_data进行处理
 """
@@ -188,15 +190,18 @@ def exercises(request, topic_title):
 
 @require_http_methods(["GET"])
 def binlog(request):
+    global binlogEnd, binlogFile
     cursor = connection.cursor()
     cursor.execute("show master status")
     main_binlog_tuple = cursor.fetchall()
     # print(main_binlog_tuple)
-    main_log=main_binlog_tuple[0][0]
+    main_log = main_binlog_tuple[0][0]
+    binlogFile = main_log
     # print(main_log)
     cursor.execute("show binlog events in '" + str(main_log) + "'")
     all_result = cursor.fetchall()
     raws = len(all_result)
+    binlogEnd = raws
     last_modified_raw = 0
     results = []
 
@@ -214,10 +219,87 @@ def binlog(request):
         "binlog_file": results[0][0],
         "server_id": results[0][3],
         "begin_pos": results[0][1],
-        "end_pos": results[len(results)-1][4],
+        "end_pos": results[len(results) - 1][4],
         "table": results[1][5],
         "operation": results[2][2],
         "flags": results[2][5]
     }
     # print(response)
     return JsonResponse(response)
+
+
+@require_http_methods(["GET"])
+def lastModifiedBinlog(request):
+    global binlogEnd, binlogFile
+    cursor = connection.cursor()
+    cursor.execute("show binlog events in '" + str(binlogFile) + "'")
+    all_result = cursor.fetchall()
+    raws = len(all_result)
+    # print("raws: " + str(raws) + " binlogEnd: " + str(binlogEnd))
+
+    if raws <= binlogEnd:
+        response = {
+            "binlog_file": str(binlogFile),
+            "result": "no change since last modify."
+        }
+        return JsonResponse(response)
+
+    else:
+        results = []
+        for i in range(binlogEnd, raws):
+            results.append(all_result[i])
+
+        # print(list(results))
+
+        modifications = {
+        }
+
+        single_modification = {
+            "binlog_file": "",
+            "server_id": "",
+            "begin_pos": "",
+            "end_pos": ""
+        }
+        time = 0
+        for i in range(0, len(results)):
+
+            if results[i][2] == "Anonymous_Gtid":
+                # print("find begin!!!-------------")
+                binlog_file = results[i][0]
+                # print("binlogFile: " + binlog_file)
+                server_id = results[i][3]
+                # print("server_id: " + str(server_id))
+                begin_pos = results[i][1]
+                # print("begin_pos: " + str(begin_pos))
+                table = results[i + 2][5]
+                # print(table)
+                operation = results[i + 3][2]
+                # print(operation)
+
+                single_modification.update({
+                    "binlog_file": binlog_file,
+                    "server_id": server_id,
+                    "begin_pos": begin_pos,
+                    "table": table,
+                    "operation": operation,
+                    "end_pos": ""
+                })
+            if results[i][2] == "Xid":
+                # print("find commit!!!----------------")
+                end_pos = results[i][1]
+                # print("end_pos: " + str(end_pos))
+                single_modification.update({"end_pos": end_pos})
+                modifications.update({
+                    time: single_modification
+                })
+                single_modification = {
+                    "binlog_file": "",
+                    "server_id": "",
+                    "begin_pos": "",
+                    "table": "",
+                    "operation": "",
+                    "end_pos": ""
+                }
+                time += 1
+
+    return JsonResponse(modifications)

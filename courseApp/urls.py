@@ -9,6 +9,7 @@ urlpatterns = [
     path('coursesDetail/<int:id>/', views.coursesDetail, name='coursesDetail'),
     path('search/', views.search, name='search'),
     path('binlog/', views.binlog),
+    path('binlogs/', views.lastModifiedBinlog),
     path('exercise/<str:topic_title>/<int:id>', views.exercise, name='exercise'),
     path('exercises/<str:topic_title>', views.exercises, name='exercises')
 ]

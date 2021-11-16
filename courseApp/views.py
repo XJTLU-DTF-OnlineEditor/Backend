@@ -5,6 +5,7 @@ from django.http.response import JsonResponse
 from django.views.decorators.http import require_http_methods
 from pyquery import PyQuery as pq
 from django.shortcuts import get_object_or_404, render
+
 from .models import MyCourse, Topic
 from django.core.paginator import Paginator
 import json
@@ -303,3 +304,97 @@ def lastModifiedBinlog(request):
                 time += 1
 
     return JsonResponse(modifications)
+
+
+'''
+->
+{
+    "entity": "Topic",
+    "content": {
+        "topic_title": string
+        "topic_id": string
+        "topic_coontent": string
+    }
+}
+
+<-
+{
+    "error_code": 200,
+    "msg": create success
+    "content": "topic item: topic_title create successfully"
+}
+'''
+
+
+@require_http_methods(["POST"])
+def create(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        content = request_body.get("content")
+        request_entity = request_body.get("entity")
+
+        if request_entity == "Topic":
+            topic_title = content.get("topic_title")
+            print(len(topic_title))
+            topic_id = content.get("topic_id")
+            print(len(topic_id))
+            topic_content = content.get("topic_content")
+            print(len(topic_content))
+            if (len(topic_id) > 0) & (len(topic_title) > 0) & (len(topic_content) > 0):
+                Topic.objects.create(topic_title=topic_title, topic_content=topic_content, topic_id=topic_id)
+            else:
+                result = {
+                    "error_code": 422,
+                    "msg": "received empty content."
+                }
+                return JsonResponse(result, status=422)
+            result = {
+                "error_code": 200,
+                "msg": "create success!",
+                "content": "topic item: " + topic_title + " create successfully",
+            }
+
+            return JsonResponse(result, status=200)
+        else:
+            response = {
+                "error_code": 422,
+                "msg": "no entity"
+            }
+            return JsonResponse(response, status=422)
+
+
+@require_http_methods(["POST"])
+def delete(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        content = request_body.get("content")
+        request_entity = request_body.get("entity")
+
+        if request_entity == "Topic":
+            topic_title = content.get("topic_title")
+            # print(len(topic_title))
+            topic_id = content.get("topic_id")
+            # print(len(topic_id))
+            topic_content = content.get("topic_content")
+            # print(len(topic_content))
+            if (len(topic_id) > 0) & (len(topic_title) > 0) & (len(topic_content) > 0):
+                Topic.objects.filter(topic_title=topic_title, topic_content=topic_content, topic_id=topic_id).delete()
+            else:
+                result = {
+                    "error_code": 422,
+                    "msg": "received empty content."
+                }
+                return JsonResponse(result, status=422)
+            result = {
+                "error_code": 200,
+                "msg": "deleted success!",
+                "content": "topic item: " + topic_title + " deleted successfully",
+            }
+
+            return JsonResponse(result, status=200)
+        else:
+            response = {
+                "error_code": 422,
+                "msg": "no entity"
+            }
+            return JsonResponse(response, status=422)

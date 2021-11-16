@@ -11,5 +11,7 @@ urlpatterns = [
     path('binlog/', views.binlog),
     path('binlogs/', views.lastModifiedBinlog),
     path('exercise/<str:topic_title>/<int:id>', views.exercise, name='exercise'),
-    path('exercises/<str:topic_title>', views.exercises, name='exercises')
+    path('exercises/<str:topic_title>', views.exercises, name='exercises'),
+    path('create/', views.create),
+    path('delete/', views.delete)
 ]

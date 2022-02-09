@@ -23,7 +23,7 @@ lxml==4.4.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
 mysqlclient==2.0.3
-numpy==1.21.1
+numpy
 olefile==0.46
 opencv-python==4.5.3.56
 Pillow

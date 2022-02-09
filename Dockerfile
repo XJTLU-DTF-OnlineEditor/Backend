@@ -1,7 +1,7 @@
-FROM jsanchezislas/ubuntupython
+FROM registry.cn-hangzhou.aliyuncs.com/docker_fyp/docker_fyp_container:v0.0.1
 LABEL maintainer=Danny
 ENV PYTHONUNBUFFERED 1
-RUN mkdir /code
+RUN mkdir /code && pip install --upgrade pip
 WORKDIR /code
 COPY requirements.txt /code
 

@@ -16,6 +16,8 @@ class Topic(models.Model):
     topic_id = models.CharField(primary_key=True, max_length=20, auto_created=True, )
 
     topic_content = models.TextField(null=True)  # introduction the main content of the topic
+    views = models.PositiveIntegerField('浏览量', default=0)  # view numbers of the topic
+    create_time = models.DateTimeField(auto_now=True)
     topic_img = models.ImageField(null=True, width_field='img_width', height_field='img_height',
                                   blank=True, verbose_name='topic_image')
     img_width = models.IntegerField(verbose_name='img width', null=True, blank=True)

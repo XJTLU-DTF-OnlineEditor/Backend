@@ -26,7 +26,7 @@ topic 的models还未规范需要与kiki确定才能部署
 
 
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ('topic_title',)
+    list_display = ('topic_title', 'create_time')
     style_fields = {'topic_content': 'ueditor'}
 
 

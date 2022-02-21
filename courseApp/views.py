@@ -171,7 +171,7 @@ def top_topic(request):
             top_5_topic = Topic.objects.get(pk=key)
             top_5_topic_img = ""
             if top_5_topic.topic_img:
-                top_5_topic_img = str("http://120.26.46.74:4000/media/") + str(top_5_topic.topic_img)
+                top_5_topic_img = str("http://120.26.46.74:4000/media/topic_imgs/") + str(top_5_topic.topic_img)
             else:
                 top_5_topic_img = None
             topic_dict = {

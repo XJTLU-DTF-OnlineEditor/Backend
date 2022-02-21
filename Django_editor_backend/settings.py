@@ -101,7 +101,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'online_editor',
-        'HOST': 'www.dannyhao.top',
+        'HOST': '120.26.46.74',
         'POST': 3306,
         'USER': 'root',
         'PASSWORD': ''

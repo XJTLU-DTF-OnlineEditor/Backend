@@ -13,7 +13,7 @@ Topic模型还不完善 如有加入需要引用外键
 
 class Topic(models.Model):
     topic_title = models.CharField(max_length=20, verbose_name='Topic title')  # Topic title
-    topic_id = models.CharField(primary_key=True, max_length=20, auto_created=True)
+    topic_id = models.IntegerField(primary_key=True, auto_created=True, )
 
     topic_description = models.TextField(max_length=200, default="")  # A brief description of the content
 
@@ -36,11 +36,11 @@ class Topic(models.Model):
 
 
 class MyCourse(models.Model):
+    id = models.IntegerField(primary_key=True, max_length=20, auto_created=True, )
+    content = RichTextUploadingField(u'内容', default='请输入课程内容')
+    teacher_id = models.CharField(max_length=20, default=None)
     related_topic = models.ForeignKey(to=Topic, on_delete=models.CASCADE)
     title = models.CharField(max_length=50, verbose_name='课程标题')  # 和subtopic_title
-    description = RichTextUploadingField(u'内容',
-                                         default='请输入课程内容',
-                                         )
     update_date = models.DateTimeField(max_length=20,
                                        default=timezone.now,
                                        verbose_name='更新时间')

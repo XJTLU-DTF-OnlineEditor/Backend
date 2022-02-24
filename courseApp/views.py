@@ -53,7 +53,6 @@ Done
 
 def Courses(request, topic_title):
     if request.method == 'GET':
-        # print(topic_title)
         all_topic = Topic.objects.all()
         topic_list = []
         for top_obj in all_topic:
@@ -67,36 +66,73 @@ def Courses(request, topic_title):
                 "error_code": 200,
                 "msg": 'success',
                 'topic_title': topic_title,
-                'topic_content': Topic.objects.get(topic_title=topic_title).topic_content,
-                'course_list': json.loads(course_list),
+                'topic_img': str(Topic.objects.get(topic_title=topic_title).topic_img),
+                'topic_content': json.dumps(Topic.objects.get(topic_title=topic_title).topic_content),
+                'course_list': json.dumps(course_list),
             }
             return JsonResponse(result, safe=False)
         else:
             result = {
                 "error_code": 204,
-                "msg": 'no topic',
+                "msg": topic_title + "does not exist.",
             }
             return JsonResponse(result, safe=False)
 
 
-def coursesDetail(request, id):
+def coursesDetail(request, topic_title, id):
     if request.method == 'GET':
-        mycourses = get_object_or_404(MyCourse, id=id)
-        mycourses.views += 1
-        mycourses.save()  # 存到数据库中 views 的变换
+        try:
+            mycourse = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=topic_title))
+            # get_object_or_404(MyCourse, id=id)
+            mycourse.views += 1
+            mycourse.save()  # 存到数据库中 views 的变换
+            result = {
+                "error_code": 200,
+                "msg": 'success',
+                'id': id,
+                'related_topic': mycourse.related_topic.topic_title,
+                'exercise_title': mycourse.title,
+                'exercise_content': mycourse.content,
+                'update_date': json.loads(json.dumps(mycourse.update_date, cls=DateEncoder)),
+                'views': mycourse.views,
+            }
+            return JsonResponse(json.loads(json.dumps(result, cls=MyCourseEncoder)), safe=False)
+        except Exception as e:
+            result = {
+                "error_code": 430,
+                "msg": "the course does not exit",
+            }
+            return JsonResponse(result, status=430)
+    else:
         result = {
-            "error_code": 200,
-            "msg": 'success',
-            'active_menu': 'Courses',
-            'lesson_id': id,
-            'lesson_title': mycourses.title,
-            'lesson_content': mycourses.description,
-            'create_time': json.loads(json.dumps(mycourses.update_date, cls=DateEncoder)),
-            'topic_name': mycourses.related_topic.topic_title,
-            'views': mycourses.views,
+            "error_code": 400,
+            'msg': 'INVALID REQUEST'
         }
+        return JsonResponse(result)
 
-        return JsonResponse(json.loads(json.dumps(result, cls=MyCourseEncoder)), safe=False)
+
+def search(request):
+    if request.method == 'GET':
+        keyword = request.GET.get('keyword')  # 获取关键词
+        teacher_id = request.GET.get('teacher_id')
+        if teacher_id:
+            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(teacher_id=teacher_id))
+        else:
+            course_list = MyCourse.objects.filter(title__icontains=keyword)
+        if len(course_list) > 0:
+            course_list = serializers.serialize("json", course_list.order_by('update_date'))
+            result = {
+                "error_code": 200,
+                "msg": 'success',
+                'course_list': course_list,
+            }
+            return JsonResponse(result, safe=False)
+        else:
+            result = {
+                "error_code": 430,
+                "msg": "the course does not exit",
+            }
+            return JsonResponse(result, status=430)
     else:
         result = {
             "error_code": 400,
@@ -117,6 +153,26 @@ Get topic on the Welcome page: (return the top 5 most valuable courses)
         'img': Topic.topic_img,
     }
 '''
+
+
+def TopicsByTeacher(request):
+    if request.method == 'GET':
+        teacher_id = request.GET.get('teacher_id')
+        topics = Topic.objects.filter(teacher_id=teacher_id)
+        if len(topics) > 0:
+            topics = serializers.serialize("json", topics)
+            result = {
+                "error_code": 200,
+                "msg": 'success',
+                "data": topics
+            }
+            return JsonResponse(result, safe=False)
+        else:
+            result = {
+                "error_code": 430,
+                "msg": "does not exit any topics",
+            }
+            return JsonResponse(result, safe=False)
 
 
 def top_topic(request):
@@ -445,39 +501,158 @@ def lastModifiedBinlog(request):
 
 @require_http_methods(["POST"])
 def create(request):
-    if request.method == 'POST':
-        request_body = json.loads(request.body)
-        content = request_body.get("content")
-        request_entity = request_body.get("entity")
+    request_body = json.loads(request.body)
+    content = request_body.get("content")
+    request_entity = request_body.get("request_entity")
 
-        if request_entity == "Topic":
-            topic_title = content.get("topic_title")
-            print(len(topic_title))
-            # topic_id = content.get("topic_id")
-            # print(len(topic_id))
-            topic_content = content.get("topic_content")
-            print(len(topic_content))
-            if (len(topic_title) > 0) & (len(topic_content) > 0):
-                Topic.objects.create(topic_title=topic_title, topic_content=topic_content)
-            else:
-                result = {
-                    "error_code": 422,
-                    "msg": "received empty content."
-                }
-                return JsonResponse(result, status=422)
+    if request_entity == "Topic":
+        topic_title = content.get("topic_title")
+        topic_content = content.get("topic_content")
+        topic_img = content.get("topic_img")
+        teacher_id = content.get("teacher_id")
+        if (len(topic_title) > 0) & (len(topic_content) > 0):
+            topic = Topic.objects.create(topic_title=topic_title, topic_content=topic_content, topic_img=topic_img,
+                                         teacher_id=teacher_id)
             result = {
                 "error_code": 200,
                 "msg": "create success!",
                 "content": "topic item: " + topic_title + " create successfully",
+                "id": topic.topic_id
             }
-
             return JsonResponse(result, status=200)
         else:
+            result = {
+                "error_code": 422,
+                "msg": "received empty content.",
+            }
+            return JsonResponse(result, status=422)
+
+    elif request_entity == "Course":
+        related_topic = content.get("related_topic")
+        title = content.get("exercise_title")
+        exercise_content = content.get("exercise_content")
+        teacher_id = content.get("teacher_id")
+
+        if (len(related_topic) > 0) & (len(title) > 0) & (len(exercise_content) > 0):
+            try:
+                topic_id = Topic.objects.get(topic_title=related_topic).topic_id
+                course = MyCourse.objects.get_or_create(related_topic_id=topic_id, title=title,
+                                                        content=exercise_content,
+                                                        teacher_id=teacher_id)
+                result = {
+                    "error_code": 200,
+                    "msg": "success",
+                    'id ': 1,
+                    "related_topic": related_topic,
+                    'update_date': course[0].update_date,
+                    'views': course[0].views
+                }
+                return JsonResponse(result, status=200)
+            except Exception as e:
+                result = {
+                    "error_code": 430,
+                    "msg": "the topic does not exit",
+                }
+                return JsonResponse(result, status=430)
+        else:
+            result = {
+                "error_code": 422,
+                "msg": "received empty content."
+            }
+            return JsonResponse(result, status=422)
+    else:
+        response = {
+            "error_code": 422,
+            "msg": "no entity"
+        }
+        return JsonResponse(response, status=422)
+
+
+@require_http_methods(["POST"])
+def edit(request):
+    request_body = json.loads(request.body)
+    content = request_body.get("content")
+    request_entity = request_body.get("request_entity")
+    if request_entity == "Course":
+        id = content.get("id")
+        related_topic = content.get("related_topic")
+        exercise_title = content.get("exercise_title")
+        exercise_content = content.get("exercise_content")
+        # teacher_id = request_body.get("teacher_id")
+        if not id or not related_topic:
             response = {
                 "error_code": 422,
-                "msg": "no entity"
+                "msg": "received empty content."
             }
             return JsonResponse(response, status=422)
+        try:
+            course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))
+            if exercise_title:
+                course.title = exercise_title
+            if exercise_content:
+                course.content = exercise_content
+            course.save()
+
+            course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))
+
+            result = {
+                "error_code": 200,
+                "msg": "success",
+                "id": id,
+                "related_topic": course.related_topic.topic_title,
+                "update_date": course.update_date,
+                "views": course.update_date,
+            }
+            return JsonResponse(result, status=200)
+
+        except Exception as e:
+            result = {
+                "error_code": 430,
+                "msg": "course " + exercise_title + " does not exit",
+                "id": id
+            }
+            return JsonResponse(result, status=410)
+
+    elif request_entity == "Topic":
+        topic_id = content.get("topic_id")
+        topic_info = content.get("topic_info")
+        if (not topic_id) or (not topic_info):
+            response = {
+                "error_code": 422,
+                "msg": "received empty content."
+            }
+            return JsonResponse(response, status=422)
+        topic_title = topic_info.get("topic_title")
+        topic_img = topic_info.get("topic_img")
+        topic_content = topic_info.get("topic_content")
+
+        try:
+            topic = Topic.objects.get(topic_id=topic_id)
+            if topic_title:
+                print("topic_title")
+                topic.title = topic_title
+            if topic_img:
+                print("topic_title")
+                topic.title = topic_img
+            if topic_content:
+                print("topic_title")
+                topic.content = topic_content
+            topic.save()
+            result = {
+                "error_code": 200,
+                "msg": "success",
+                "id": topic_id
+            }
+            return JsonResponse(result, status=200)
+
+        except Exception as e:
+            print(e)
+            result = {
+                "error_code": 430,
+                "msg": "topic " + topic_title + " does not exit",
+                "id": topic_id
+            }
+            return JsonResponse(result, status=410)
 
 
 @require_http_methods(["POST"])
@@ -485,37 +660,57 @@ def delete(request):
     if request.method == 'POST':
         request_body = json.loads(request.body)
         content = request_body.get("content")
-        request_entity = request_body.get("entity")
+        request_entity = request_body.get("request_entity")
 
         if request_entity == "Topic":
-            topic_title = content.get("topic_title")
-            # print(len(topic_title))
-            # topic_id = content.get("topic_id")
-            # print(len(topic_id))
-            topic_content = content.get("topic_content")
-            # print(len(topic_content))
-            if (len(topic_title) > 0) & (len(topic_content) > 0):
-                try:
-                    Topic.objects.filter(topic_title=topic_title, topic_content=topic_content).delete()
-                except:
+            # topic_title = content.get("topic_title")
+            # topic_id = content.get("id")
+            # topic_content = content.get("topic_content")
+            if (len(content) > 0):
+                topic = Topic.objects.filter(topic_id=content)
+                if len(topic) > 0:
+                    topic.delete()
                     result = {
-                        "error_code": 422,
-                        "msg": "no such content."
+                        "error_code": 200,
+                        "msg": "deleted success!",
+                        "content": "topic item: " + content + " deleted successfully",
                     }
-                    return JsonResponse(result)
+                else:
+                    result = {
+                        "error_code": 430,
+                        "msg": "the topic does not exit",
+                        "id": content
+                    }
+                return JsonResponse(result, status=200)
             else:
                 result = {
                     "error_code": 422,
                     "msg": "received empty content."
                 }
                 return JsonResponse(result, status=422)
-            result = {
-                "error_code": 200,
-                "msg": "deleted success!",
-                "content": "topic item: " + topic_title + " deleted successfully",
-            }
 
-            return JsonResponse(result, status=200)
+        elif request_entity == "Course":
+            related_topic = request_body.get("related_topic")
+            lst = []
+            for id in content:
+                course = MyCourse.objects.filter(Q(id=id) & Q(related_topic__topic_title=related_topic))
+                if len(course) > 0:
+                    course.delete()
+                else:
+                    lst.append(id)
+            if len(lst) == 0:
+                result = {
+                    "error_code": 200,
+                    "msg": "success",
+                }
+                return JsonResponse(result, status=200)
+            else:
+                result = {
+                    "error_code": 410,
+                    "msg": "delete error",
+                    "id": lst
+                }
+                return JsonResponse(result, status=410)
         else:
             response = {
                 "error_code": 422,

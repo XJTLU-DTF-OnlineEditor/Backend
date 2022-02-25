@@ -4,3 +4,5 @@
 
 *.sqlite3
 
+courseApp/__pycache__/
+Django_editor_backend/__pycache__/

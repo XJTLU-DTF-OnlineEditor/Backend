@@ -111,36 +111,6 @@ def coursesDetail(request, topic_title, id):
         return JsonResponse(result)
 
 
-def search(request):
-    if request.method == 'GET':
-        keyword = request.GET.get('keyword')  # 获取关键词
-        teacher_id = request.GET.get('teacher_id')
-        if teacher_id:
-            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(teacher_id=teacher_id))
-        else:
-            course_list = MyCourse.objects.filter(title__icontains=keyword)
-        if len(course_list) > 0:
-            course_list = serializers.serialize("json", course_list.order_by('update_date'))
-            result = {
-                "error_code": 200,
-                "msg": 'success',
-                'course_list': course_list,
-            }
-            return JsonResponse(result, safe=False)
-        else:
-            result = {
-                "error_code": 430,
-                "msg": "the course does not exit",
-            }
-            return JsonResponse(result, status=430)
-    else:
-        result = {
-            "error_code": 400,
-            'msg': 'INVALID REQUEST'
-        }
-        return JsonResponse(result)
-
-
 '''
 Get topic on the Welcome page: (return the top 5 most valuable courses)
 ->GET:
@@ -296,6 +266,35 @@ def search_topic(request, keyword):
         }
         return JsonResponse(result)
 
+
+def search(request):
+    if request.method == 'GET':
+        keyword = request.GET.get('keyword')  # 获取关键词
+        teacher_id = request.GET.get('teacher_id')
+        if teacher_id:
+            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(teacher_id=teacher_id))
+        else:
+            course_list = MyCourse.objects.filter(title__icontains=keyword)
+        if len(course_list) > 0:
+            course_list = serializers.serialize("json", course_list.order_by('update_date'))
+            result = {
+                "error_code": 200,
+                "msg": 'success',
+                'course_list': course_list,
+            }
+            return JsonResponse(result, safe=False)
+        else:
+            result = {
+                "error_code": 430,
+                "msg": "the course does not exit",
+            }
+            return JsonResponse(result, status=430)
+    else:
+        result = {
+            "error_code": 400,
+            'msg': 'INVALID REQUEST'
+        }
+        return JsonResponse(result)
 
 """
 Get a particular exercise under a topic

@@ -232,7 +232,7 @@ def top_topic(request):
                 top_5_topic_img = None
             topic_dict = {
                 "topic_title": top_5_topic.topic_title,
-                "topic_content": top_5_topic.topic_content,
+                "topic_content": top_5_topic.topic_description,
                 "topic_img": top_5_topic_img
             }
             top_5_list.append(topic_dict)

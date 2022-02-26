@@ -67,14 +67,14 @@ def Courses(request, topic_title):
                 "msg": 'success',
                 'topic_title': topic_title,
                 'topic_img': str(Topic.objects.get(topic_title=topic_title).topic_img),
-                'topic_content': json.dumps(Topic.objects.get(topic_title=topic_title).topic_content),
-                'course_list': json.dumps(course_list),
+                'topic_content': Topic.objects.get(topic_title=topic_title).topic_content,
+                'course_list': course_list,
             }
             return JsonResponse(result, safe=False)
         else:
             result = {
                 "error_code": 204,
-                "msg": topic_title + "does not exist.",
+                "msg": topic_title + " does not exist.",
             }
             return JsonResponse(result, safe=False)
 

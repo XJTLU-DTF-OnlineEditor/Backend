@@ -14,6 +14,7 @@ Topic模型还不完善 如有加入需要引用外键
 class Topic(models.Model):
     topic_title = models.CharField(max_length=20, verbose_name='Topic title')  # Topic title
     topic_id = models.IntegerField(primary_key=True, auto_created=True, )
+    teacher_id = models.CharField(max_length=20, default=None)
 
     topic_description = models.TextField(max_length=200, default="")  # A brief description of the content
 

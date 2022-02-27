@@ -68,7 +68,7 @@ def Courses(request, topic_title):
                 'topic_title': topic_title,
                 'topic_img': str(Topic.objects.get(topic_title=topic_title).topic_img),
                 'topic_content': Topic.objects.get(topic_title=topic_title).topic_content,
-                'course_list': course_list,
+                'course_list': json.loads(course_list),
             }
             return JsonResponse(result, safe=False)
         else:
@@ -124,7 +124,7 @@ def search(request):
             result = {
                 "error_code": 200,
                 "msg": 'success',
-                'course_list': course_list,
+                'course_list': json.loads(course_list),
             }
             return JsonResponse(result, safe=False)
         else:
@@ -164,7 +164,7 @@ def TopicsByTeacher(request):
             result = {
                 "error_code": 200,
                 "msg": 'success',
-                "data": topics
+                "data": json.loads(topics)
             }
             return JsonResponse(result, safe=False)
         else:

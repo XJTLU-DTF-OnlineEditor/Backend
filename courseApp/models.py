@@ -37,14 +37,14 @@ class Topic(models.Model):
 
 
 class MyCourse(models.Model):
-    id = models.IntegerField(primary_key=True, max_length=20, auto_created=True, )
+    id = models.AutoField(primary_key=True, max_length=20, auto_created=True, )
     content = RichTextUploadingField(u'内容', default='请输入课程内容')
     teacher_id = models.CharField(max_length=20, default=None)
     related_topic = models.ForeignKey(to=Topic, on_delete=models.CASCADE)
     title = models.CharField(max_length=50, verbose_name='课程标题')  # 和subtopic_title
     update_date = models.DateTimeField(max_length=20,
-                                       default=timezone.now,
-                                       verbose_name='更新时间')
+                                       verbose_name='更新时间',
+                                       auto_now=True)
 
     views = models.PositiveIntegerField('浏览量', default=0)
 

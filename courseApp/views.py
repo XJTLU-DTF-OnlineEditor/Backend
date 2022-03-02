@@ -79,13 +79,16 @@ def search(request):
 Get topic on the Welcome page: (return the top 5 most valuable courses)
 ->GET:
 <-
+    [{
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }, 
     {
-        “error_code”: 200
-        'msg': "success",
-        'title': Topic.topic_title,
-        'content': Topic.topic_content,
-        'img': Topic.topic_img,
-    }
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }]
 '''
 
 
@@ -120,10 +123,11 @@ def top_topic(request):
                            ((delta.days + 3) ^ 2)  # Insure the denominator is not zero
 
             score_dict.update({topic.pk: topic_score})
+            print(str(score_dict))
         sorted_topic = dict(sorted(score_dict.items(), key=lambda item: item[1], reverse=True))
         # print(sorted_topic)
 
-        # add top 5 topics into a new dict
+        # add top 6 topics into a new dict
         required_cnt = 6
         cnt = 0
         top_6_dict = {}
@@ -133,9 +137,8 @@ def top_topic(request):
             if cnt > required_cnt:
                 break
             top_6_dict.update({key: value})
-        # print(top_5_dict)
 
-        # search top 5 topic in database and add top 5 into a dict list
+        # search top 6 topic in database and add top 5 into a dict list
         top_6_list = []
         for key in top_6_dict.keys():
             top_6_topic = Topic.objects.get(pk=key)
@@ -153,6 +156,66 @@ def top_topic(request):
         # print(top_5_list)
 
         return JsonResponse(top_6_list, safe=False)
+
+
+'''
+return 6 newest courses sorted by date
+-> Get
+ [{
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }, 
+    {
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }]
+
+'''
+
+
+def new_topic(request):
+    if request.method == "GET":
+        all_topics = Topic.objects.filter().all()
+        create_date_dict = {}
+        # Add all the topics into one date dict
+        for topic in all_topics:
+            topic_create_time = topic.create_time.date()
+            create_date_dict.update({topic.pk: topic_create_time})
+        # print(str(create_date_dict))
+
+        # Sort the dict by the create time
+        sorted_topic = dict(sorted(create_date_dict.items(), key=lambda item: item[1], reverse=True))
+        # print(sorted_dict)
+        # add top 6 topics into a new dict
+        required_cnt = 6
+        cnt = 0
+        top_6_dict = {}
+        for key, value in sorted_topic.items():
+            print("key: " + str(key) + " value: " + str(value))
+            cnt += 1
+            if cnt > required_cnt:
+                break
+            # top_6_dict.update({key: value})
+
+        # search top 6 topic in database and add top 6 into a dict list
+        new_6_list = []
+        for key in top_6_dict.keys():
+            top_6_topic = Topic.objects.get(pk=key)
+            top_6_topic_img = ""
+            if top_6_topic.topic_img:
+                top_6_topic_img = str("http://120.26.46.74:4000/media/") + str(top_6_topic.topic_img)
+            else:
+                top_6_topic_img = None
+            topic_dict = {
+                "topic_title": top_6_topic.topic_title,
+                "topic_content": top_6_topic.topic_description,
+                "topic_img": top_6_topic_img
+            }
+            new_6_list.append(topic_dict)
+
+        return JsonResponse(new_6_list, safe=False)
 
 
 '''

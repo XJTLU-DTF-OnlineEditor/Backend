@@ -197,7 +197,7 @@ def new_topic(request):
             cnt += 1
             if cnt > required_cnt:
                 break
-            # top_6_dict.update({key: value})
+            top_6_dict.update({key: value})
 
         # search top 6 topic in database and add top 6 into a dict list
         new_6_list = []

@@ -210,35 +210,35 @@ def top_topic(request):
         # print(sorted_topic)
 
         # add top 5 topics into a new dict
-        required_cnt = 5
+        required_cnt = 6
         cnt = 0
-        top_5_dict = {}
+        top_6_dict = {}
         for key, value in sorted_topic.items():
             # print("key: " + str(key) + " value: " + str(value))
             cnt += 1
             if cnt > required_cnt:
                 break
-            top_5_dict.update({key: value})
+            top_6_dict.update({key: value})
         # print(top_5_dict)
 
         # search top 5 topic in database and add top 5 into a dict list
-        top_5_list = []
-        for key in top_5_dict.keys():
-            top_5_topic = Topic.objects.get(pk=key)
-            top_5_topic_img = ""
-            if top_5_topic.topic_img:
-                top_5_topic_img = str("http://120.26.46.74:4000/media/topic_imgs/") + str(top_5_topic.topic_img)
+        top_6_list = []
+        for key in top_6_dict.keys():
+            top_6_topic = Topic.objects.get(pk=key)
+            top_6_topic_img = ""
+            if top_6_topic.topic_img:
+                top_6_topic_img = str("http://120.26.46.74:4000/media/") + str(top_6_topic.topic_img)
             else:
-                top_5_topic_img = None
+                top_6_topic_img = None
             topic_dict = {
-                "topic_title": top_5_topic.topic_title,
-                "topic_content": top_5_topic.topic_description,
-                "topic_img": top_5_topic_img
+                "topic_title": top_6_topic.topic_title,
+                "topic_content": top_6_topic.topic_description,
+                "topic_img": top_6_topic_img
             }
-            top_5_list.append(topic_dict)
+            top_6_list.append(topic_dict)
         # print(top_5_list)
 
-        return JsonResponse(top_5_list, safe=False)
+        return JsonResponse(top_6_list, safe=False)
 
 
 '''

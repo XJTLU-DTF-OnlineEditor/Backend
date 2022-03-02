@@ -13,8 +13,8 @@ urlpatterns = [
     path('topic/', views.top_topic),
     path('binlog/', views.binlog),
     path('binlogs/', views.lastModifiedBinlog),
-    # path('exercises/<str:topic_title>', views.exercises, name='exercises'),
     path('create/', views.create),
+    path('edit/', views.edit),
+    path('sort/', views.sort),
     path('delete/', views.delete),
-    path('edit/', views.edit)
 ]

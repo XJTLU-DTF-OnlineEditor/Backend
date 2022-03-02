@@ -92,5 +92,3 @@ def run_in_docker(source,input, input_type, terminate):
     except Exception as err:
         raise err
     return read_output(output_path), need_input
-
-#262ae7215664502738bebf6cca30813b20d139844b385f2fe90102302fb5b7db

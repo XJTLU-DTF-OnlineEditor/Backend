@@ -80,83 +80,153 @@ def search(request):
 
 
 '''
-Get topic on the Welcome page: (return the top 5 most valuable courses)
+Get topic on the Welcome page: (return the top 6 most valuable courses)
 ->GET:
 <-
+    [{
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }, 
     {
-        “error_code”: 200
-        'msg': "success",
-        'title': Topic.topic_title,
-        'content': Topic.topic_content,
-        'img': Topic.topic_img,
-    }
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }]
 '''
 
 
-def top_topic(request):
-    if request.method == 'GET':
-        all_topics = Topic.objects.filter().all()
-        score_dict = {}
-        all_likes = Like.objects.all()
-        all_collections = Collect.objects.all()
+@require_http_methods(["GET"])
+def top_topic(request, num):
+    all_topics = Topic.objects.filter().all()
+    all_likes = Like.objects.all()
+    all_collections = Collect.objects.all()
+    score_dict = {}
+    # print(all_topics.count())
+    # compute the score for each topic
+    for topic in all_topics:
+        topic_score = 0
+        topic_like = 0
+        topic_collect = 0
 
-        # compute the score for each topic
-        for topic in all_topics:
-            topic_score = 0
-            topic_like = 0
-            topic_collect = 0
+        topic_create_time = topic.create_time.date()
+        time_now = datetime.now().date()
 
-            topic_create_time = topic.create_time.date()
-            time_now = datetime.now().date()
+        # Add up like score
+        for like_obj in all_likes:
+            if topic.topic_title == like_obj.topic.topic_title:
+                topic_like += 1
 
-            # Add up like score
-            for like_obj in all_likes:
-                if topic.topic_title == like_obj.topic.topic_title:
-                    topic_like += 1
+        # Add up collect score
+        for collect_obj in all_collections:
+            if topic.topic_title == collect_obj.topic.topic_title:
+                topic_collect += 1
 
-            # Add up collect score
-            for collect_obj in all_collections:
-                if topic.topic_title == collect_obj.topic.topic_title:
-                    topic_collect += 1
+        delta = time_now - topic_create_time
+        topic_score += (topic_collect * 10 + topic_like * 5 + topic.views + 1) / \
+                       ((delta.days + 3) ^ 2)  # Insure the denominator is not zero
 
-            delta = time_now - topic_create_time
-            topic_score += (topic_collect * 10 + topic_like * 5 + topic.views + 1) / \
-                           ((delta.days + 3) ^ 2)  # Insure the denominator is not zero
+        score_dict.update({topic.pk: topic_score})
+        # print(str(score_dict))
+    sorted_topic = dict(sorted(score_dict.items(), key=lambda item: item[1], reverse=True))
 
-            score_dict.update({topic.pk: topic_score})
-        sorted_topic = dict(sorted(score_dict.items(), key=lambda item: item[1], reverse=True))
-        # print(sorted_topic)
+    # If num == "all", return all the topics ranked by heat
+    if num == 'all':
+        top_topics = []
+        for key in sorted_topic.keys():
+            top_topic = Topic.objects.get(pk=key)
+            top_topic_img = ''
+            if top_topic.topic_img:
+                top_topic_img = str("http://120.26.46.74:4000/media/" + str(top_topic.topic_img))
+            else:
+                top_topic_img = None
+            topic_dict = {
+                "topic_title": top_topic.topic_title,
+                "topic_content": top_topic.topic_description,
+                "topic_img": top_topic_img
+            }
+            top_topics.append(topic_dict)
+        return JsonResponse(top_topics, safe=False)
 
-        # add top 5 topics into a new dict
-        required_cnt = 5
+    # return number num of topics
+    else:
+        # add top num topics into a new dict
+        required_cnt = int(num)
         cnt = 0
-        top_5_dict = {}
+        top_6_dict = {}
         for key, value in sorted_topic.items():
             # print("key: " + str(key) + " value: " + str(value))
             cnt += 1
             if cnt > required_cnt:
                 break
-            top_5_dict.update({key: value})
-        # print(top_5_dict)
+            top_6_dict.update({key: value})
 
-        # search top 5 topic in database and add top 5 into a dict list
-        top_5_list = []
-        for key in top_5_dict.keys():
-            top_5_topic = Topic.objects.get(pk=key)
-            top_5_topic_img = ""
-            if top_5_topic.topic_img:
-                top_5_topic_img = str("http://120.26.46.74:4000/media/topic_imgs/") + str(top_5_topic.topic_img)
+        # search top 6 topic in database and add top 5 into a dict list
+        top_6_list = []
+        for key in top_6_dict.keys():
+            top_6_topic = Topic.objects.get(pk=key)
+            top_6_topic_img = ""
+            if top_6_topic.topic_img:
+                top_6_topic_img = str("http://120.26.46.74:4000/media/") + str(top_6_topic.topic_img)
             else:
-                top_5_topic_img = None
+                top_6_topic_img = None
             topic_dict = {
-                "topic_title": top_5_topic.topic_title,
-                "topic_content": top_5_topic.topic_description,
-                "topic_img": top_5_topic_img
+                "topic_title": top_6_topic.topic_title,
+                "topic_content": top_6_topic.topic_description,
+                "topic_img": top_6_topic_img
             }
-            top_5_list.append(topic_dict)
+            top_6_list.append(topic_dict)
         # print(top_5_list)
+        return JsonResponse(top_6_list, safe=False)
 
-        return JsonResponse(top_5_list, safe=False)
+
+'''
+return newest courses sorted by date
+-> Get
+ [{
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }, 
+    {
+        'topic_title': Topic.topic_title,
+        'topic_content': Topic.topic_content,
+        'topic_img': Topic.topic_img,
+    }]
+
+'''
+
+
+def new_topic(request):
+    if request.method == "GET":
+        all_topics = Topic.objects.filter().all()
+        create_date_dict = {}
+        # Add all the topics into one date dict
+        for topic in all_topics:
+            topic_create_time = topic.create_time.date()
+            create_date_dict.update({topic.pk: topic_create_time})
+        # print(str(create_date_dict))
+
+        # Sort the dict by the create time
+        sorted_topic = dict(sorted(create_date_dict.items(), key=lambda item: item[1], reverse=True))
+        # print(sorted_dict)
+        # search newest topic in database and add sorted topics into a dict list
+        new_topic_list = []
+        for key in sorted_topic.keys():
+            newest_topic = Topic.objects.get(pk=key)
+            newest_topic_img = ""
+            if newest_topic.topic_img:
+                newest_topic_img = str("http://120.26.46.74:4000/media/") + str(newest_topic.topic_img)
+            else:
+                newest_topic_img = None
+            topic_dict = {
+                "topic_title": newest_topic.topic_title,
+                "topic_content": newest_topic.topic_description,
+                "topic_img": newest_topic_img
+            }
+            new_topic_list.append(topic_dict)
+
+        return JsonResponse(new_topic_list, safe=False)
 
 
 '''

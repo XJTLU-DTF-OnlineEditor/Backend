@@ -1,3 +1,5 @@
+import os
+import shutil
 from django.db import connection
 from django.db.models import Q, Count
 from django.http.response import JsonResponse
@@ -7,6 +9,8 @@ from identity.models import Like, Collect
 import json
 from datetime import date, datetime
 from django.core import serializers  # JsonResponse用来将QuerySet序列化
+from django.conf import settings
+import uuid
 
 global binlogEnd, binlogFile
 
@@ -426,6 +430,115 @@ def coursesDetail(request, topic_title, id):
         return JsonResponse(result, status=430)
 
 
+def upload_course_img(request, topic_title):
+    img = request.FILES.get("upload")
+    fname = "topic_imgs/" + topic_title + "/" + img.name
+    path = os.path.join(settings.MEDIA_ROOT, fname)
+
+    try:
+        if os.path.exists(path):
+            uuid_str = uuid.uuid4().hex[4: 12]
+            fname = fname.split(".")[0] + "_" + uuid_str + "." + fname.split(".")[1]
+            path = os.path.join(settings.MEDIA_ROOT, fname)
+        if not os.path.exists(os.path.dirname(path)):
+            os.mkdir(os.path.dirname(path))
+        with open(path, "wb") as f:
+            for line in img:
+                f.write(line)
+        result = {
+            "error_code": 200,
+            'msg': 'upload success',
+            "uploaded": 1,
+            "fileName": fname,
+            "url": "/media/" + fname
+        }
+        return JsonResponse(result, status=200)
+    except Exception as e:
+        result = {
+            "error_code": 430,
+            'msg': 'upload failed',
+            'imgUrl': fname
+        }
+        return JsonResponse(result, status=430)
+
+
+# @require_http_methods(["POST"])
+def upload_topic_img(request):
+    topic_img = request.FILES.get("topic_img")
+    fname = "topic_imgs/" + topic_img.name
+    path = os.path.join(settings.MEDIA_ROOT, fname)
+
+    try:
+        if os.path.exists(path):
+            uuid_str = uuid.uuid4().hex[4: 12]
+            fname = fname.split(".")[0] + "_" + uuid_str + "." + fname.split(".")[1]
+            path = os.path.join(settings.MEDIA_ROOT, fname)
+            topic_img.name = fname
+        with open(path, "wb") as f:
+            for line in topic_img:
+                f.write(line)
+
+        result = {
+            "error_code": 200,
+            'msg': 'upload success',
+            'imgUrl': fname
+        }
+        return JsonResponse(result, status=200)
+    except Exception as e:
+        print(e)
+        result = {
+            "error_code": 430,
+            'msg': 'upload failed',
+            'imgUrl': fname
+        }
+        return JsonResponse(result, status=430)
+
+
+@require_http_methods(["POST"])
+def delete_img(request):
+    request_body = json.loads(request.body)
+    fname = request_body.get("fname")
+    request_entity = request_body.get("request_entity")
+    path = os.path.join(settings.MEDIA_ROOT, fname)
+
+    try:
+        if request_entity == "Topic":
+            topic = Topic.objects.filter(topic_img=fname)
+            if len(topic) > 0:
+                result = {
+                    "error_code": 200,
+                    'msg': 'delete image failed',
+                    'imgUrl': fname
+                }
+                return JsonResponse(result, status=200)
+            else:
+                if os.path.exists(path):  # 判断文件是否存在
+                    os.remove(path)
+
+                result = {
+                    "error_code": 200,
+                    'msg': 'delete image success',
+                    'url': fname
+                }
+                return JsonResponse(result, status=200)
+
+        else:
+            response = {
+                "error_code": 422,
+                "msg": "invalid entity"
+            }
+            return JsonResponse(response, status=422)
+
+    except Exception as e:
+        print(e)
+        result = {
+            "error_code": 430,
+            'msg': 'delete image failed',
+            'imgUrl': fname
+        }
+        return JsonResponse(result, status=430)
+
+
 @require_http_methods(["POST"])
 def create(request):
     request_body = json.loads(request.body)
@@ -437,24 +550,22 @@ def create(request):
         topic_content = content.get("topic_content")
         topic_img = content.get("topic_img")
         teacher_id = content.get("teacher_id")
+
+        fname = None
+        if topic_img:
+            fname = topic_img['name']
         if (len(topic_title) > 0) & (len(topic_content) > 0):
-            topic = Topic.objects.get_or_create(topic_title=topic_title,
-                                                topic_content=topic_content,
-                                                topic_img=topic_img,
-                                                teacher_id=teacher_id)
-            if topic[1]:
-                result = {
-                    "error_code": 200,
-                    "msg": "create success!",
-                    "content": "topic item: " + topic_title + " create successfully",
-                }
-                return JsonResponse(result, status=200)
-            else:
-                result = {
-                    "error_code": 450,
-                    "msg": "The topic has existed",
-                }
-                return JsonResponse(result, status=450)
+            topic = Topic.objects.create(topic_title=topic_title,
+                                         topic_content=topic_content,
+                                         topic_img=fname,
+                                         teacher_id=teacher_id)
+            # if topic[1]:
+            result = {
+                "error_code": 200,
+                "msg": "create success!",
+                "content": "topic item: " + topic_title + " create successfully",
+            }
+            return JsonResponse(result, status=200)
         else:
             result = {
                 "error_code": 422,
@@ -472,7 +583,6 @@ def create(request):
             try:
                 topic_id = Topic.objects.get(topic_title=related_topic).topic_id
                 subtopic_id = MyCourse.objects.filter(related_topic_id=topic_id).aggregate(num=Count('id'))['num'] + 1
-                print(subtopic_id, 777)
                 course = MyCourse.objects.create(related_topic_id=topic_id, title=title,
                                                  content=course_content,
                                                  teacher_id=teacher_id,
@@ -486,7 +596,7 @@ def create(request):
                     "data": data
                 }
                 return JsonResponse(result, status=200)
-            except ArithmeticError as e:
+            except Exception as e:
                 print(e)
                 result = {
                     "error_code": 430,
@@ -517,6 +627,7 @@ def edit(request):
         related_topic = content.get("related_topic")
         title = content.get("title")
         content = content.get("content")
+
         # teacher_id = request_body.get("teacher_id")
         if not id or not related_topic:
             response = {
@@ -561,7 +672,7 @@ def edit(request):
     elif request_entity == "Topic":
         topic_id = content.get("topic_id")
         topic_info = content.get("topic_info")
-        if (not topic_id) or (not topic_info):
+        if not topic_id:
             response = {
                 "error_code": 422,
                 "msg": "received empty content."
@@ -575,13 +686,12 @@ def edit(request):
         try:
             topic = Topic.objects.get(topic_id=topic_id)
             if topic_title:
-                print("topic_title")
                 topic.title = topic_title
             if topic_img:
-                print("topic_title")
-                topic.title = topic_img
+                topic.topic_img = topic_img['name']
+            else:
+                topic.topic_img = None
             if topic_content:
-                print("topic_title")
                 topic.content = topic_content
             topic.save()
             result = {
@@ -669,7 +779,17 @@ def delete(request):
         if content:
             try:
                 topic = Topic.objects.get(topic_id=content)
+                courses = MyCourse.objects.filter(related_topic_id=content)
+                courses.delete()
+                img_dir = os.path.join(settings.MEDIA_ROOT, "topic_imgs", topic.topic_title)
+                if os.path.exists(img_dir):
+                    shutil.rmtree(img_dir)
                 topic.delete()
+                img = topic.topic_img
+                if img:
+                    img_path = os.path.join(settings.MEDIA_ROOT, img.name)
+                    if os.path.exists(img_path):
+                        os.remove(img_path)
                 result = {
                     "error_code": 200,
                     "msg": "deleted success!",

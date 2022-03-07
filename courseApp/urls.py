@@ -17,4 +17,7 @@ urlpatterns = [
     path('edit/', views.edit),
     path('sort/', views.sort),
     path('delete/', views.delete),
+    path('upload_topic_img/', views.upload_topic_img),
+    path('upload_course_img/<str:topic_title>/', views.upload_course_img),
+    path('delete_img/', views.delete_img)
 ]

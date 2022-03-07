@@ -21,10 +21,11 @@ class Topic(models.Model):
     topic_content = models.TextField(null=True)  # introduction to the main content of the topic
     views = models.PositiveIntegerField('浏览量', default=0)  # view numbers of the topic
     create_time = models.DateTimeField(auto_now=True)
-    topic_img = models.ImageField(null=True, width_field='img_width', height_field='img_height',
-                                  blank=True, verbose_name='topic_image', upload_to="topic_imgs")
-    img_width = models.IntegerField(verbose_name='img width', null=True, blank=True)
-    img_height = models.IntegerField(verbose_name='img height', null=True, blank=True)
+    topic_img = models.ImageField(null=True,
+                                  blank=True, verbose_name='topic_image', upload_to="topic_imgs/")
+
+    # img_width = models.IntegerField(verbose_name='img width', null=True, blank=True)
+    # img_height = models.IntegerField(verbose_name='img height', null=True, blank=True)
 
     def __str__(self):
         return self.topic_title

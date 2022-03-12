@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
@@ -9,25 +11,18 @@ old_result = ''
 need_input = False
 
 
-def index(request):
-    context = {}
-    return render(request, 'index.html', context)
-
-
 def run(request):
     global old_result, need_input
-    # shell_script = settings.RUN_IN_DOCKER_SH_PATH
+    request_body = json.loads(request.body)
     try:
-        body_unicode = request.body.decode() + "\n"
-        request_content = json.loads(body_unicode)
-        lang = request_content.get("lang")
-        input_type = request_content.get("inputType")
-        memory_limit = request_content.get("memory_limit")
-        input = request_content.get("input")
-        source = request_content.get("source")
-        time_limit = request_content.get("time_limit")
-        id = request_content.get("id")
-        terminate = request_content.get("terminate")
+        lang = request_body.get("lang")
+        input_type = request_body.get("inputType")
+        # memory_limit = request_body.get("memory_limit")
+        input = request_body.get("input")
+        source = request_body.get("source")
+        time_limit = request_body.get("time_limit")
+        id = request_body.get("id")
+        terminate = request_body.get("terminate")
     except TimeoutError:
         old_result = ''
         response = {
@@ -35,7 +30,8 @@ def run(request):
             "msg": " Request time out"
         }
         return JsonResponse(response, safe=False)
-    except:
+    except Exception as e:
+        print(e)
         old_result = ''
         response = {
             "error_code": 400,
@@ -47,12 +43,13 @@ def run(request):
     result = ""
     error_code = 200
     msg = "success"
-    source_file = settings.SOURCE_FILE_PATH
+    source_path = settings.SOURCE_FILE_PATH
+    code_path = os.path.splitext(source_path)[0] + "_" + id + os.path.splitext(source_path)[1]
 
     if input_type == "Split" or input_type == "Interactive":
         try:
-            result, need_input = run_in_docker(source, input, input_type, terminate)
-            result = result.replace(source_file, "source")
+            result, need_input = run_in_docker(source, input, input_type, terminate, id)
+            result = result.replace(code_path, "source")
             if terminate:
                 result = ''
                 old_result = ''
@@ -99,7 +96,6 @@ def run(request):
             'request_status': "success",
             'errors': errors,
             'time_limit': time_limit,
-            # 'compile_status': True,
             'run_status': "OK",
             'Output': result,
             'id': id,

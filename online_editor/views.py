@@ -68,6 +68,7 @@ def run(request):
             errors = "%s" % r
             old_result = ''
         except Exception as r:  # 处理运行时的错误并将错误存入数据库
+            print(r)
             error_code = 500
             msg = " Server has encountered error, cannot resolve request"
             errors = "运行时出现错误: %s" % r

@@ -3,8 +3,6 @@
 """
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.db import models
-import django.utils.timezone as timezone
-
 """
 Topic模型还不完善 如有加入需要引用外键
 对应课程页面的各个课程卡片
@@ -48,7 +46,6 @@ class MyCourse(models.Model):
                                        auto_now=True)
 
     views = models.PositiveIntegerField('浏览量', default=0)
-
     subtopic_id = models.IntegerField(verbose_name='课程id')
 
     def __str__(self):

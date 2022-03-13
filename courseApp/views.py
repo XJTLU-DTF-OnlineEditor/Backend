@@ -786,11 +786,11 @@ def edit(request):
             }
             return JsonResponse(result, status=500)
     else:
-        result = {
-            "error_code": 400,
-            'msg': 'INVALID REQUEST'
+        response = {
+            "error_code": 422,
+            "msg": "invalid entity"
         }
-        return JsonResponse(result, status=400)
+        return JsonResponse(response, status=422)
 
 
 @require_http_methods(["POST"])
@@ -832,11 +832,11 @@ def sort(request):
             }
             return JsonResponse(result, status=422)
     else:
-        result = {
-            "error_code": 400,
-            'msg': 'INVALID REQUEST'
+        response = {
+            "error_code": 422,
+            "msg": "invalid entity"
         }
-        return JsonResponse(result, status=400)
+        return JsonResponse(response, status=422)
 
 
 @require_http_methods(["POST"])
@@ -906,8 +906,8 @@ def delete(request):
             }
             return JsonResponse(result, status=410)
     else:
-        result = {
-            "error_code": 400,
-            'msg': 'INVALID REQUEST'
+        response = {
+            "error_code": 422,
+            "msg": "invalid entity"
         }
-        return JsonResponse(result, status=400)
+        return JsonResponse(response, status=422)

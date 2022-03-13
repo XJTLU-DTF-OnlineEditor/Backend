@@ -36,7 +36,7 @@ def stopContainer(id):
 
 
 def Split_input_output(id):
-    split_input_path = "C:/tmp/input_%s.txt" % id
+    split_input_path = "/tmp/input_%s.txt" % id
     with open(split_input_path) as inputs:
         while processes["process_%s" % id].poll() is None:
             input = inputs.readline()
@@ -59,8 +59,8 @@ def interActive_Terminal(input, id):
 
 
 def call_docker(input, input_type, id):
-    input_path = "C:/tmp/input_%s.txt" % id
-    command = 'docker run -i --name py_%s -v C:/tmp:/tmp python python3 /tmp/code_%s.py > /tmp/code_%s.out' % (
+    input_path = "/tmp/input_%s.txt" % id
+    command = 'docker run -i --name py_%s -v /tmp:/tmp python python3 /tmp/code_%s.py > /tmp/code_%s.out' % (
         id, id, id)
     #  2>&1 输出错误（不展现）
     try:
@@ -83,8 +83,8 @@ def call_docker(input, input_type, id):
 # executes given code in a docker container
 def run_in_docker(source, input, input_type, terminate, id):
     need_input = False
-    source_path = "C:/tmp/code_%s.py" % id
-    output_path = "C:/tmp/code_%s.out" % id
+    source_path = "/tmp/code_%s.py" % id
+    output_path = "/tmp/code_%s.out" % id
     try:
         if processes.get("process_%s" % id, -1) == -1:  # 第一次运行代码code.py
             save_as_file(source_path, source)

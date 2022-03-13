@@ -36,9 +36,9 @@ def run(request):
     result = ""
     error_code = 200
     msg = "success"
-    source_path = "C:/tmp/code_%s.py" % id
-    input_path = "C:/tmp/input_%s.txt" % id
-    output_path = "C:/tmp/code_%s.out" % id
+    source_path = "/tmp/code_%s.py" % id
+    input_path = "/tmp/input_%s.txt" % id
+    output_path = "/tmp/code_%s.out" % id
 
     if input_type == "Split" or input_type == "Interactive":
         try:

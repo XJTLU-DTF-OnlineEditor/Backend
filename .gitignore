@@ -6,3 +6,5 @@
 
 courseApp/__pycache__/
 Django_editor_backend/__pycache__/
+identity/__pycache__/
+online_editor/__pycache__/

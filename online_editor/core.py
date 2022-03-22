@@ -35,7 +35,7 @@ def linux_path(type, id):
 
 
 def windows_path(type, id):
-    root = "C:/tmp/source_%s" % id
+    root = "/tmp/source_%s" % id
     if type == Path.root:
         return root
     elif type == Path.source:

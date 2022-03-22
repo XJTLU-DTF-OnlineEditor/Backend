@@ -1,17 +1,57 @@
+import os
+import shutil
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from subprocess import *
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from func_timeout import func_set_timeout, FunctionTimedOut
+
+from online_editor.models import Codes
 
 processes = globals()
+pool = ThreadPoolExecutor()
 
 
-# saves content to file with given name
+class Path(Enum):
+    root = "root"
+    source = "source_path"
+    input = "input_path"
+    output = "output_path"
+
+
+def linux_path(type, id):
+    root = "/tmp/source_%s" % id
+    if type == Path.root:
+        return root
+    elif type == Path.source:
+        return "%s/code.py" % root
+    elif type == Path.input:
+        return "%s/input.txt" % root
+    elif type == Path.output:
+        return "%s/code.out" % root
+
+
+def windows_path(type, id):
+    root = "C:/tmp/source_%s" % id
+    if type == Path.root:
+        return root
+    elif type == Path.source:
+        return "%s/code.py" % root
+    elif type == Path.input:
+        return "%s/input.txt" % root
+    elif type == Path.output:
+        return "%s/code.out" % root
+
+
 def save_as_file(file_name, content):
     with open(file_name, 'w') as f:
         f.write(content)
 
 
-def read_output(file_name):
+def read_file(file_name):
     try:
         with open(file_name, 'r') as f:
             return f.read()
@@ -19,94 +59,132 @@ def read_output(file_name):
         return ""
 
 
-def inputIn(input, id):
-    input = input.rstrip() + '\r\n'
-    processes["process_%s" % id].stdin.write(input)
-    processes["process_%s" % id].stdin.flush()
-    time.sleep(1)
+def input_in(id, input):
+    try:
+        input = input.rstrip() + '\r\n'
+        processes["process_%s" % id].stdin.write(input)
+        processes["process_%s" % id].stdin.flush()
+    except Exception as e:
+        raise e
 
 
-def stopContainer(id):
-    while processes["process_%s" % id].poll() is None:
-        Popen('docker stop py_%s' % id, shell=True)
-        time.sleep(3)
-    Popen('docker rm py_%s' % id, shell=True)
-    time.sleep(0.5)
-    del processes["process_%s" % id]
+def send_save_result(id, output):
+    notify_ws_clients(id, "result", output)
+    terminate_container(id)
+    try:
+        code_obj = Codes.objects.get(code_id=id)
+        code_obj.code_result = output
+        code_obj.save()
+    except Exception as e:
+        print(e)
+    try:
+        shutil.rmtree(windows_path(Path.root, id), True)
+    except FileNotFoundError as e:
+        print(e)
 
 
-def Split_input_output(id):
-    split_input_path = "/tmp/input_%s.txt" % id
-    with open(split_input_path) as inputs:
-        while processes["process_%s" % id].poll() is None:
-            input = inputs.readline()
-            if input:
-                inputIn(input, id)
-            else:  # 输入缺失
-                stopContainer(id)
-                raise ValueError("ArgumentMissingError: insuffcient arguments for compilation!")
+def notify_ws_clients(code_id, message, value):
+    notification = {
+        'type': "chat.message",
+        'message': message,
+        'data': '{}'.format(value)
+    }
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)("{}".format(code_id), notification)
+
+
+def handle_error(id, error):
+    notify_ws_clients(id, "error", error)
+
+    Popen('docker stop py_%s' % id, shell=True).communicate()
+
+    code_obj = Codes.objects.get(code_id=id)
+    code_obj.errors = error
+    code_obj.save()
+
+
+def terminate_container(id):
+    if isinstance(processes.get("process_%s" % id, -1), subprocess.Popen):
+        if not processes["process_%s" % id].poll() is None:
+            Popen('docker rm py_%s' % id, shell=True).communicate()
+            del processes["process_%s" % id]
         else:
-            Popen('docker rm py_%s' % id, shell=True)
+            Popen('docker stop py_%s' % id, shell=True).communicate()
+            terminate_container(id)
 
 
-def interActive_Terminal(input, id):
-    inputIn(input, id)
-    if not processes["process_%s" % id].poll() is None:
-        Popen('docker rm py_%s' % id, shell=True)
-        time.sleep(0.5)
-        return False
-    return True
+def runcode_timer(id, type):
+    try:
+        if type == "interactive":
+            interactive_input_output(id)
+        elif type == "split":
+            split_input_output(id)
+    except FunctionTimedOut as e:
+        print('function timeout + msg = ', e.msg)
+        handle_error(id, "request timeout")
 
 
-def call_docker(input, input_type, id):
-    input_path = "/tmp/input_%s.txt" % id
-    command = 'docker run -i --name py_%s -v /tmp:/tmp python python3 /tmp/code_%s.py > /tmp/code_%s.out' % (
-        id, id, id)
+def runcode_interactive(id, lang, source):
+    os.mkdir(windows_path(Path.root, id))
+    save_as_file(windows_path(Path.source, id), source)
+    try:
+        command = 'docker run -i --name py_%s -v %s:%s python python3 -u %s' % (
+            id, windows_path(Path.root, id), linux_path(Path.root, id), linux_path(Path.source, id))
+        processes["process_%s" % id] = Popen(command, stdin=PIPE, stdout=PIPE, stderr=STDOUT, shell=True,
+                                             universal_newlines=True, encoding='utf-8')
+        pool.submit(runcode_timer, id, "interactive")
+    except Exception as e:
+        terminate_container(id)
+        raise e
+
+
+@func_set_timeout(300)
+def interactive_input_output(id):
+    output = ''
+    while processes["process_%s" % id].poll() is None:
+        try:
+            tmp = processes["process_%s" % id].stdout.readline()
+            notify_ws_clients(id, "output", tmp)
+            output += tmp
+        except Exception as error:
+            handle_error(id, error)
+    else:
+        send_save_result(id, output)
+
+
+def runcode_split(id, lang, source, input):
+    os.mkdir(windows_path(Path.root, id))
+
+    save_as_file(windows_path(Path.source, id), source)
+    save_as_file(windows_path(Path.input, id), input)
+
+    command = 'docker run -i --name py_%s -v %s:%s python python3 %s > %s' % (
+        id, windows_path(Path.root, id), linux_path(Path.root, id), linux_path(Path.source, id),
+        linux_path(Path.output, id))
     #  2>&1 输出错误（不展现）
     try:
         processes["process_%s" % id] = Popen(command, stdin=PIPE, stdout=None, stderr=STDOUT, shell=True,
                                              universal_newlines=True, encoding='utf-8')
-        time.sleep(1.5)
-        while processes["process_%s" % id].poll() is None:  # 需要输入
-            if input_type == "Split":  # Split模式
-                save_as_file(input_path, input)
-                Split_input_output(id)
-            else:  # interactive模式
-                # need_input = true
-                return True
-    except Exception as err:
-        print('---', err, '---')
-        stopContainer(id)
-    return False
+        pool.submit(runcode_timer, id, "split")
+    except Exception as e:
+        raise e
 
 
-# executes given code in a docker container
-def run_in_docker(source, input, input_type, terminate, id):
-    need_input = False
-    source_path = "/tmp/code_%s.py" % id
-    output_path = "/tmp/code_%s.out" % id
-    try:
-        if processes.get("process_%s" % id, -1) == -1:  # 第一次运行代码code.py
-            save_as_file(source_path, source)
-            need_input = call_docker(input, input_type, id)
-        elif terminate:  # 用户手动终止
-            stopContainer(id)
-        elif processes["process_%s" % id].poll() is None and input_type == 'Interactive':  # interactive模式，等待用户输入
-            inputIn(input, id)
-            # need_input = interActive_Terminal(input, id)
-        else:  # 代码运行结束/发生错误，关闭容器，再次运行代码
-            stopContainer(id)
-            time.sleep(0.2)
-            call_docker(input, input_type, id)
-    except Exception as err:
-        print(err)
-        stopContainer(id)
-    finally:
-        if isinstance(processes.get("process_%s" % id, -1), subprocess.Popen):
-            if not processes["process_%s" % id].poll() is None:
-                Popen('docker rm py_%s' % id, shell=True)
+@func_set_timeout(300)
+def split_input_output(id):
+    with open(windows_path(Path.input, id)) as inputs:
+        while processes["process_%s" % id].poll() is None:
+            input = inputs.readline()
+            if input:
                 time.sleep(0.5)
-                del processes["process_%s" % id]
-                need_input = False
-    print(read_output(output_path), 88)
-    return read_output(output_path), need_input
+                try:
+                    input_in(id, input)
+                    time.sleep(1)
+                except Exception as error:
+                    print(error)
+                    handle_error(id, error)
+            else:  # 输入缺失
+                print("===")
+                error = "insuffcient arguments for compilation!"
+                handle_error(id, error)
+    send_save_result(id, read_file(windows_path(Path.output, id)))

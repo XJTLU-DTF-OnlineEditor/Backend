@@ -418,6 +418,7 @@ def search_topic(request, keyword):
 
 @require_http_methods(["GET"])
 def TopicsByTeacher(request):
+    result = ''
     try:
         teacher_id = request.GET.get('teacher_id')
         topics = Topic.objects.filter(teacher_id=teacher_id)
@@ -428,24 +429,24 @@ def TopicsByTeacher(request):
                 "msg": 'success',
                 "data": json.loads(topics)
             }
-            return JsonResponse(result, status=200, safe=False)
         else:
             result = {
                 "error_code": 430,
                 "msg": "does not exit any topics",
             }
-            return JsonResponse(result, status=430, safe=False)
     except Exception as e:
         print(e)
         result = {
             "error_code": 500,
             "msg": "Something wrong happens",
         }
-        return JsonResponse(result, status=500, safe=False)
+    finally:
+        return JsonResponse(result)
 
 
 @require_http_methods(["GET"])
 def Courses(request, topic_title):
+    result = ''
     try:
         course_list = MyCourse.objects.all() \
             .filter(related_topic__topic_title=topic_title) \
@@ -460,24 +461,24 @@ def Courses(request, topic_title):
                 'topic_content': Topic.objects.get(topic_title=topic_title).topic_content,
                 'course_list': course_list,
             }
-            return JsonResponse(result, status=200, safe=False)
         else:
             result = {
                 "error_code": 204,
                 "msg": topic_title + " does not exist.",
             }
-            return JsonResponse(result, status=204, safe=False)
     except Exception as e:
         print(e)
         result = {
             "error_code": 500,
             "msg": "Something wrong happens. Please try again later",
         }
-        return JsonResponse(result, status=500, safe=False)
+    finally:
+        return JsonResponse(result)
 
 
 @require_http_methods(["GET"])
 def coursesDetail(request, topic_title, id):
+    result = ''
     try:
         mycourse = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=topic_title))
         # get_object_or_404(MyCourse, id=id)
@@ -491,13 +492,13 @@ def coursesDetail(request, topic_title, id):
             "msg": 'success',
             'data': data
         }
-        return JsonResponse(result, status=200)
     except MyCourse.DoesNotExist:
         result = {
             "error_code": 430,
             "msg": "the course does not exit",
         }
-        return JsonResponse(result, status=430)
+    finally:
+        return JsonResponse(result)
 
 
 def upload_course_img(request, topic_title):
@@ -505,6 +506,7 @@ def upload_course_img(request, topic_title):
     fname = "topic_imgs/" + topic_title + "/" + img.name
     path = os.path.join(settings.MEDIA_ROOT, fname)
 
+    result = ''
     try:
         if os.path.exists(path):
             uuid_str = uuid.uuid4().hex[4: 12]
@@ -522,21 +524,22 @@ def upload_course_img(request, topic_title):
             "fileName": fname,
             "url": "/media/" + fname
         }
-        return JsonResponse(result, status=200)
     except Exception as e:
         result = {
             "error_code": 430,
             'msg': 'upload failed',
             'imgUrl': fname
         }
-        return JsonResponse(result, status=430)
+    finally:
+        return JsonResponse(result)
 
 
-# @require_http_methods(["POST"])
 def upload_topic_img(request):
     topic_img = request.FILES.get("topic_img")
     fname = "topic_imgs/" + topic_img.name
     path = os.path.join(settings.MEDIA_ROOT, fname)
+
+    result = ''
 
     try:
         if os.path.exists(path):
@@ -553,7 +556,6 @@ def upload_topic_img(request):
             'msg': 'upload success',
             'imgUrl': fname
         }
-        return JsonResponse(result, status=200)
     except Exception as e:
         print(e)
         result = {
@@ -561,7 +563,7 @@ def upload_topic_img(request):
             'msg': 'upload failed',
             'imgUrl': fname
         }
-        return JsonResponse(result, status=430)
+    return JsonResponse(result)
 
 
 @require_http_methods(["POST"])
@@ -570,6 +572,8 @@ def delete_img(request):
     fname = request_body.get("fname")
     request_entity = request_body.get("request_entity")
     path = os.path.join(settings.MEDIA_ROOT, fname)
+
+    result = ''
 
     try:
         if request_entity == "Topic":
@@ -580,7 +584,7 @@ def delete_img(request):
                     'msg': 'delete image failed',
                     'imgUrl': fname
                 }
-                return JsonResponse(result, status=200)
+                return JsonResponse(result)
             else:
                 if os.path.exists(path):  # 判断文件是否存在
                     os.remove(path)
@@ -590,14 +594,14 @@ def delete_img(request):
                     'msg': 'delete image success',
                     'url': fname
                 }
-                return JsonResponse(result, status=200)
+                return JsonResponse(result)
 
         else:
             response = {
                 "error_code": 422,
                 "msg": "invalid entity"
             }
-            return JsonResponse(response, status=422)
+            return JsonResponse(response)
 
     except Exception as e:
         print(e)
@@ -606,7 +610,7 @@ def delete_img(request):
             'msg': 'delete image failed',
             'imgUrl': fname
         }
-        return JsonResponse(result, status=430)
+    return JsonResponse(result)
 
 
 @require_http_methods(["POST"])
@@ -614,6 +618,8 @@ def create(request):
     request_body = json.loads(request.body)
     content = request_body.get("content")
     request_entity = request_body.get("request_entity")
+
+    result = ''
 
     if request_entity == "Topic":
         topic_title = content.get("topic_title")
@@ -635,13 +641,11 @@ def create(request):
                 "msg": "create success!",
                 "content": "topic item: " + topic_title + " create successfully",
             }
-            return JsonResponse(result, status=200)
         else:
             result = {
                 "error_code": 422,
                 "msg": "received empty content.",
             }
-            return JsonResponse(result, status=422)
 
     elif request_entity == "Course":
         related_topic = content.get("related_topic")
@@ -665,26 +669,23 @@ def create(request):
                     "msg": "create the course successfully",
                     "data": data
                 }
-                return JsonResponse(result, status=200)
             except Exception as e:
                 print(e)
                 result = {
                     "error_code": 430,
                     "msg": "create error",
                 }
-                return JsonResponse(result, status=430)
         else:
             result = {
                 "error_code": 422,
                 "msg": "received empty content."
             }
-            return JsonResponse(result, status=422)
     else:
-        response = {
+        result = {
             "error_code": 422,
             "msg": "no entity"
         }
-        return JsonResponse(response, status=422)
+    return JsonResponse(result, status=422)
 
 
 @require_http_methods(["POST"])
@@ -692,6 +693,9 @@ def edit(request):
     request_body = json.loads(request.body)
     content = request_body.get("content")
     request_entity = request_body.get("request_entity")
+
+    result = ''
+
     if request_entity == "Course":
         id = content.get("id")
         related_topic = content.get("related_topic")
@@ -700,11 +704,10 @@ def edit(request):
 
         # teacher_id = request_body.get("teacher_id")
         if not id or not related_topic:
-            response = {
+            result = {
                 "error_code": 422,
                 "msg": "received empty content."
             }
-            return JsonResponse(response, status=422)
         try:
             course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))
             if title:
@@ -722,32 +725,27 @@ def edit(request):
                 "msg": "success",
                 "data": data,
             }
-            return JsonResponse(result, status=200)
-
         except MyCourse.DoesNotExist:
             result = {
                 "error_code": 430,
                 "msg": "course 【" + title + "】 does not exit",
                 "id": id
             }
-            return JsonResponse(result, status=430)
         except Exception as e:
             print(e)
             result = {
                 "error_code": 500,
                 "msg": "Something wrong happens. Please try again later",
             }
-            return JsonResponse(result, status=500)
 
     elif request_entity == "Topic":
         topic_id = content.get("topic_id")
         topic_info = content.get("topic_info")
         if not topic_id:
-            response = {
+            result = {
                 "error_code": 422,
                 "msg": "received empty content."
             }
-            return JsonResponse(response, status=422)
 
         topic_title = topic_info.get("topic_title")
         topic_img = topic_info.get("topic_img")
@@ -769,7 +767,6 @@ def edit(request):
                 "msg": "success",
                 "id": topic_id
             }
-            return JsonResponse(result, status=200)
 
         except Topic.DoesNotExist:
             result = {
@@ -777,20 +774,18 @@ def edit(request):
                 "msg": "topic 【" + topic_title + "】 does not exit",
                 "id": topic_id
             }
-            return JsonResponse(result, status=430)
         except Exception as e:
             print(e)
             result = {
                 "error_code": 500,
                 "msg": "Something wrong happens. Please try again later",
             }
-            return JsonResponse(result, status=500)
     else:
-        response = {
+        result = {
             "error_code": 422,
             "msg": "invalid entity"
         }
-        return JsonResponse(response, status=422)
+    return JsonResponse(result)
 
 
 @require_http_methods(["POST"])
@@ -798,6 +793,8 @@ def sort(request):
     request_body = json.loads(request.body)
     request_entity = request_body.get("request_entity")
     content = request_body.get("content")
+
+    result = ''
 
     if request_entity == "Course":
         related_topic = request_body.get("related_topic")
@@ -817,26 +814,23 @@ def sort(request):
                     "error_code": 200,
                     "msg": "sort success",
                 }
-                return JsonResponse(result, status=200)
             else:
                 result = {
                     "error_code": 430,
                     "msg": "some courses sort error",
                     "lst": lst
                 }
-                return JsonResponse(result, status=430)
         else:
             result = {
                 "error_code": 422,
                 "msg": "received empty content."
             }
-            return JsonResponse(result, status=422)
     else:
-        response = {
+        result = {
             "error_code": 422,
             "msg": "invalid entity"
         }
-        return JsonResponse(response, status=422)
+    return JsonResponse(result)
 
 
 @require_http_methods(["POST"])
@@ -844,6 +838,8 @@ def delete(request):
     request_body = json.loads(request.body)
     content = request_body.get("content")
     request_entity = request_body.get("request_entity")
+
+    result = ''
 
     if request_entity == "Topic":
         if content:
@@ -865,27 +861,23 @@ def delete(request):
                     "msg": "deleted success!",
                     "content": "topic item: " + str(content) + " deleted successfully",
                 }
-                return JsonResponse(result, status=200)
             except Topic.DoesNotExist:
                 result = {
                     "error_code": 430,
                     "msg": "the topic does not exit",
                     "id": content
                 }
-                return JsonResponse(result, status=430)
             except Exception as e:
                 print(e)
                 result = {
                     "error_code": 500,
                     "msg": "Something wrong happens. Please try again later",
                 }
-                return JsonResponse(result, status=500)
         else:
             result = {
                 "error_code": 422,
                 "msg": "received empty content."
             }
-            return JsonResponse(result, status=422)
 
     elif request_entity == "Course":
         related_topic = request_body.get("related_topic")
@@ -896,7 +888,6 @@ def delete(request):
                 "error_code": 200,
                 "msg": "success",
             }
-            return JsonResponse(result, status=200)
         except Exception as e:
             print(e)
             result = {
@@ -904,10 +895,10 @@ def delete(request):
                 "msg": "delete error",
                 # "id": lst
             }
-            return JsonResponse(result, status=410)
     else:
-        response = {
+        result = {
             "error_code": 422,
             "msg": "invalid entity"
         }
-        return JsonResponse(response, status=422)
+
+    return JsonResponse(result)

@@ -40,11 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'courseApp',
     'online_editor',
-    # 'DjangoUeditor',
-    # 'haystack',
     'identity',
     'ckeditor',
-    'ckeditor_uploader'
+    'ckeditor_uploader',
+    'channels'
 ]
 
 # HAYSTACK_CONNECTIONS = {
@@ -85,6 +84,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Django_editor_backend.wsgi.application'
+
+# Channels
+ASGI_APPLICATION = "Django_editor_backend.asgi.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

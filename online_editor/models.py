@@ -15,7 +15,3 @@ class Codes(models.Model):  # models.Model
     run_status_time = models.IntegerField(null=True, default=0)
     run_status_memory = models.IntegerField(null=True, default=0)
     create_time = models.DateTimeField(null=True, auto_now=True)
-
-
-
-# Create your models here.

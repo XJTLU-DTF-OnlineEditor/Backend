@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend-dep
+  name: backend-dep
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-dep
+  template:
+    metadata:
+      labels:
+        app: backend-dep
+    spec:
+      containers:
+      - image: registry.cn-hangzhou.aliyuncs.com/docker_fyp/docker_fyp_container:1.0_backend_03172229
+        name: backend-dep
+      - image: redis:5
+        containerport: 6379
+      imagePullSecrets:
+      - name: registry-secret0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend-dep
+  name: backend-dep
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+    targetPort: 8001
+  selector:
+    app: backend-dep
+  type: NodePort

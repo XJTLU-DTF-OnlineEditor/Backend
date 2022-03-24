@@ -12,8 +12,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         super().__init__(args, kwargs)
         self.code_id = None
 
+    # Web socket 链接之后
     async def connect(self):
-        self.code_id = self.scope['url_route']['kwargs']['code_id']
+        self.code_id = self.scope['url_route']['kwargs']['code_id']  # code ID 作为链接的名字
 
         await self.channel_layer.group_add(
             self.code_id,
@@ -22,6 +23,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+    # 链接断开后
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(

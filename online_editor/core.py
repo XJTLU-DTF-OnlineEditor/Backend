@@ -62,6 +62,7 @@ def read_file(file_name):
 def input_in(id, input):
     try:
         input = input.rstrip() + '\r\n'
+        # 拉进程跑代码
         processes["process_%s" % id].stdin.write(input)
         processes["process_%s" % id].stdin.flush()
     except Exception as e:
@@ -84,8 +85,9 @@ def send_save_result(id, output):
 
 
 def notify_ws_clients(code_id, message, value):
+    # 传到前端webSocket
     notification = {
-        'type': "chat.message",
+        'type': "chat.message",  # consumer里的
         'message': message,
         'data': '{}'.format(value)
     }
@@ -141,14 +143,14 @@ def runcode_interactive(id, lang, source):
 @func_set_timeout(300)
 def interactive_input_output(id):
     output = ''
-    while processes["process_%s" % id].poll() is None:
+    while processes["process_%s" % id].poll() is None:  # 代码还在跑
         try:
-            tmp = processes["process_%s" % id].stdout.readline()
+            tmp = processes["process_%s" % id].stdout.readline()  # 获得进程的输出
             notify_ws_clients(id, "output", tmp)
             output += tmp
         except Exception as error:
             handle_error(id, error)
-    else:
+    else:  # 代码跑完了就吧最终结果通过websocket发给前端
         send_save_result(id, output)
 
 

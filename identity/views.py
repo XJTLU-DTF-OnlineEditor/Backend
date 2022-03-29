@@ -5,27 +5,15 @@
 # @Software: PyCharm
 
 import json
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-
-from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-
 from identity.forms import UploadImageForm
 from identity.models import Person
 from utility.utility import _exist_username, required_login
 
 
-# from aliyunsdkcore.client import AcsClient
-# from aliyunsdkcore.request import CommonRequest
-
-
-# Create your views here.
-
-
-# POST /register
 @require_http_methods(["POST"])
 def user_register(request):
     request_content = json.loads(request.body)
@@ -109,7 +97,7 @@ def user_login(request):
             'error_code': 422,
             'msg': 'User account not found, please register first'
         }
-        return JsonResponse(msg, status=401)
+        return JsonResponse(msg, status=422)
 
     user = authenticate(request, username=username, password=password)
 

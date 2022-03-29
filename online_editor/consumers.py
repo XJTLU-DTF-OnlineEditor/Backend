@@ -1,8 +1,5 @@
 import json
-import time
-
 from channels.generic.websocket import AsyncWebsocketConsumer
-
 from online_editor.core import input_in
 
 

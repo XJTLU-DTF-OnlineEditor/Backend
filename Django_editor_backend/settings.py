@@ -1,6 +1,5 @@
 import os, sqlite3
 
-# from mongoengine import connect
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -157,18 +156,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
 
-# Code files
-SOURCE_FILE_PATH = os.path.abspath("/tmp/code.py")
-INPUT_FILE_PATH = os.path.abspath("/tmp/input.txt")
-OUTPUT_FILE_PATH = os.path.abspath("/tmp/code.out")
-RUN_IN_DOCKER_SH_PATH = os.path.abspath("./run_in_docker.sh")
-
 MEDIA_URL = '/media/'  # 设置保存路径
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 CKEDITOR_UPLOAD_PATH = 'images/'
+
+RESULT_ROOT = os.path.join(BASE_DIR, 'media/result_images/')

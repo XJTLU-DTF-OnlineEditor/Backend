@@ -72,6 +72,7 @@ def save_plot_pic(code, id):
 def input_in(id, input):
     try:
         input = input.rstrip() + '\r\n'
+        # 拉进程跑代码
         processes["process_%s" % id].stdin.write(input)
         processes["process_%s" % id].stdin.flush()
     except Exception as e:

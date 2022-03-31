@@ -13,10 +13,11 @@ def user_directory_path(instance, filename):
     return os.path.join('user_imgs', str(instance.user.id), "user_icon", filename)
 
 
-# Create your models here.
+# Student model
 class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone = models.IntegerField(blank=True)
+    token = models.CharField(max_length=50, verbose_name="Token Auth", null=True, blank=True)
+    username = models.CharField(blank=True, null=True, max_length=20)
     user_icon = models.ImageField(upload_to=user_directory_path, null=True, blank=True)
     tags = models.CharField(blank=True, null=True,
                             max_length=20)  # tags chosen by users, each number has the designated skill
@@ -31,17 +32,36 @@ class Person(models.Model):
         verbose_name = 'user_extended'
 
 
-# 用户收藏
+# Teacher model
+class Admin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=50, verbose_name="Token Auth", null=True, blank=True)
+    admin_name = models.CharField(blank=True, null=True, max_length=20)
+
+
+# 学生收藏
 class Collect(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, null=True)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
 
     collect_time = models.DateTimeField(auto_now=True)
 
 
-# 用户点赞
+# 学生点赞
 class Like(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, null=True)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
 
     like_time = models.DateTimeField(auto_now=True)
+
+
+# 学生浏览记录
+class history(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+
+
+# 老师发布的课程
+class teacherCourses(models.Model):
+    teacher = models.ForeignKey(Admin, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)

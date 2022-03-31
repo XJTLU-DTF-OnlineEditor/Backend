@@ -49,3 +49,5 @@ wincertstore==0.2
 wrapt==1.12.1
 yapf==0.28.0
 func-timeout==4.3.5
+django-simple-captcha
+django-ranged-response

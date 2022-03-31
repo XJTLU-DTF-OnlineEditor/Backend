@@ -6,11 +6,13 @@
 
 from django.urls import path
 from identity import views
+from django.conf.urls import include
 
 
 app_name = 'identity'
 urlpatterns = [
     path('register/', views.user_register),
+    path('captcha/', include('captcha.urls')),
     path('login/', views.user_login),
     path('logout/', views.user_logout),
     path('currentuser/', views.current_user),

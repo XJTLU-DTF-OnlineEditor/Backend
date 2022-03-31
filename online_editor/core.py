@@ -35,7 +35,7 @@ def linux_path(type, id):
 
 
 def windows_path(type, id):
-    root = "/tmp/source_%s" % id
+    root = "C:/tmp/source_%s" % id
     if type == Path.root:
         return root
     elif type == Path.source:
@@ -127,13 +127,13 @@ def runcode_timer(id, type):
 
 
 def runcode_interactive(id, lang, source):
-    os.mkdir(windows_path(Path.root, id))
+    os.mkdir(windows_path(Path.root, id))  # 创建代码文件
     save_as_file(windows_path(Path.source, id), source)
     try:
         command = 'docker run -i --name py_%s -v %s:%s python python3 -u %s' % (
             id, windows_path(Path.root, id), linux_path(Path.root, id), linux_path(Path.source, id))
         processes["process_%s" % id] = Popen(command, stdin=PIPE, stdout=PIPE, stderr=STDOUT, shell=True,
-                                             universal_newlines=True, encoding='utf-8')
+                                             universal_newlines=True, encoding='utf-8')  # 拉线程 跑代码
         pool.submit(runcode_timer, id, "interactive")
     except Exception as e:
         terminate_container(id)

@@ -160,7 +160,7 @@ def runcode(id, lang, filelist):
     for file in filelist:
         save_as_file(windows_path(file['title'], id), save_plot_pic(file['content'], id), id)
     try:
-        command = 'docker run -i --name py_%s -v %s:%s dtf/py sh ' \
+        command = 'docker run -i --name py_%s -v %s:%s blue776/py:1 sh ' \
                   '-c "pip install -r %s && python3 -u %s"' \
                   % (id, windows_path(Path.root, id), linux_path(Path.root, id), linux_path(Path.requirements, id),
                      linux_path(Path.source, id))

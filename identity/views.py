@@ -5,14 +5,17 @@
 # @Software: PyCharm
 
 import json
+import random
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
+from Django_editor_backend import settings
 from identity.forms import UploadImageForm, UserRegisterForm
-from identity.models import Person, Admin, teacherCourses
+from identity.models import Person, Admin, teacherCourses, VerificationEmail
 from utility.utility import _exist_username, required_login, generateToken
 from django.core.mail import send_mail
 
@@ -34,71 +37,87 @@ Post /V1/user/register
 @require_http_methods(["POST"])
 def user_register(request):
     request_content = json.loads(request.body)
-    print(request_content)
+    # print(request_content)
     email = request_content.get("email")
-    if email:
-        if _exist_username(email):
+    try:
+        verifiedEmail = VerificationEmail.objects.get(email=email)
+        verification_code = verifiedEmail.verification_code
+    except Exception as e:
+        msg = {
+            "status": "error",
+            "error_code": 420,
+            "msg": str(e) + " Obtain verification code first"
+        }
+        return JsonResponse(msg)
+    if _exist_username(email):  # check If the email has already existed
+        msg = {
+            "status": "error",
+            "error_code": 421,
+            "msg": "email address already in use, please directly log in."
+        }
+        verifiedEmail.delete()
+        return JsonResponse(msg)
+    verification_code_pre = request_content.get("captcha")
+
+    if verification_code == verification_code_pre:  # Check captcha if is the same as previous one
+        userType = request_content.get("userType")
+        password = request_content.get("password")
+        username = request_content.get("username")
+        if password is not None:
+            token = generateToken(email)
+            currentAuthority = "user"
+            if userType == "student":
+                try:
+                    user = User.objects.create_user(username=email, password=password)
+                    person = Person.objects.create(user=user, username=username, token=token)
+                    user.save()
+                    person.save()
+                    user = authenticate(request, username=email, password=password)
+                    login(request, user)
+                    verifiedEmail.delete()  # delete the email verification that has already been verified
+                except Exception as e:
+                    msg = {
+                        "status": 201,
+                        "msg": str(e)
+                    }
+                    return JsonResponse(msg, status=422)
+            elif userType == "teacher":
+                currentAuthority = "admin"
+                try:
+                    user = User.objects.create_user(username=email, password=password)
+                    admin = Admin.objects.create(user=user, admin_name=username, token=token)
+                    user.save()
+                    admin.save()
+                    user = authenticate(request, username=email, password=password)
+                    login(request, user)
+                    verifiedEmail.delete()
+                except Exception as e:
+                    msg = {
+                        "status": 201,
+                        "msg": str(e)
+                    }
+                    return JsonResponse(msg, status=422)
             msg = {
-                "status": 422,
-                "msg": "email address already in use, please directly log in."
+                "status": "ok",
+                "error_code": 200,
+                "userType": userType,
+                "msg": "Register and login successfully",
+                "token": token,
+                "currentAuthority": currentAuthority
+            }
+            return JsonResponse(msg, status=200)
+        else:
+            msg = {
+                "status": "error",
+                "error_code": 422,
+                "msg": "Password is empty!"
             }
             return JsonResponse(msg, status=422)
     else:
         msg = {
-            "status": 422,
-            "msg": "Received empty email address."
-        }
-        return JsonResponse(msg, status=422)
-
-    type = request_content.get("type")
-    password = request_content.get("password")
-    username = request_content.get("username")
-
-    if password is not None:
-        if type == "student":
-            try:
-                user = User.objects.create_user(username=email, password=password)
-                person = Person.objects.create(user=user, username=username)
-                user.save()
-                person.save()
-                user = authenticate(request, username=email, password=password)
-                login(request, user)
-
-                msg = {
-                    "status": 200,
-                    "msg": "Student register and login success"
-                }
-                return JsonResponse(msg, status=200)
-            except Exception as e:
-                msg = {
-                    "status": 201,
-                    "msg": str(e)
-                }
-                return JsonResponse(msg, status=422)
-        elif type == "teacher":
-            try:
-                user = User.objects.create_user(username=email, password=password)
-                admin = Admin.objects.create(user=user, admin_name=username)
-                user.save()
-                admin.save()
-                user = authenticate(request, username=email, password=password)
-                login(request, user)
-
-                msg = {
-                    "status": 200,
-                    "msg": "teacher register and login success"
-                }
-                return JsonResponse(msg, status=200)
-            except Exception as e:
-                msg = {
-                    "status": 201,
-                    "msg": str(e)
-                }
-                return JsonResponse(msg, status=422)
-    else:
-        msg = {
-            "status": 422,
-            "msg": "empty password"
+            "status": "error",
+            "error_code": 422,
+            "msg": "Verification code is not correct!"
         }
         return JsonResponse(msg, status=422)
 
@@ -201,12 +220,27 @@ def user_logout(request):
 def current_user(request):
     cUser = request.user
     token = request.META.get("HTTP_TOKEN")
+    # print("token: " + token)
+    # print(cUser)
+    if token == "null":
+        print("guest")
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "currentAuthority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+
     currentAuthority = request.META.get("HTTP_CURRENTAUTHORITY")
     # print(token)
     # print(currentAuthority)
     # print("UserID: " + str(cUser.id))
-    if len(token) != 0 & request.user.is_authenticated:
+    if (token != "null") & (request.user.is_authenticated):
         try:
+            # print("try  s ")
             current_user = request.user
             if currentAuthority == "user":
                 student = Person.objects.get(token=token)
@@ -253,14 +287,66 @@ def current_user(request):
                 "error_code": 500,
                 "msg": str(e)
             }
-            return JsonResponse(response, status=500)
+            return JsonResponse(response)
     else:
-        response = {
+        msg = {
+            "status": "ok",
             "error_code": 403,
-            "msg": "user needs to be authorized"
+            "msg": "user not login",
+            "data": {
+                "currentAuthority": "guest"
+            }
         }
-        return JsonResponse(response, status=403)
+        return JsonResponse(msg, status=403)
 
+
+"""
+send verify email
+<- POST
+{
+    "email": string
+}
+->{
+    "status": "ok",
+    "error_code": 200,
+    "msg": verification code sent successfully
+    "data": {
+        "code": String
+    }
+}
+"""
+
+
+@require_http_methods(["POST"])
+def send_verify_email(request):
+    email_list = []
+    email = json.loads(request.body).get("email")
+    email_list.append(email)
+    # print(email)
+    verification = str(random.randint(100000, 999999))
+    # print(verification)
+    email_from = settings.EMAIL_FROM
+    message = "Your verification code is: " + verification + ", do not tell others your code!"
+    send_status = send_mail('Verification code', message, email_from, email_list)
+    # print(send_status)
+    if send_status == 1:
+        verificationObj = VerificationEmail.objects.create(email=email, verification_code=verification)
+        verificationObj.save()
+        msg = {
+            "status": "ok",
+            "error_code": 200,
+            "msg": "verification code sent successfully",
+            "data": {
+                "code": verification
+            }
+        }
+    else:
+        msg = {
+            "status": "error",
+            "error_code": 201,
+            "msg": "verification code did not send",
+        }
+    return JsonResponse(msg, status=200)
 
 
 # POST account/edit-password/:user-id
@@ -384,25 +470,3 @@ def edit_userInfo(request):
             "msg": "account needs to be authenticated"
         }
         return JsonResponse(msg, status=401)
-
-
-"""
-POST /V1/user/verify_email
-->{
-    "email": String
-    "email_id": int  # Random integer to clarify the email  
-}
-
-<-{
-    "error_code": 200
-    "msg": success
-}
-"""
-
-
-@require_http_methods(["POST"])
-@required_login
-def send_verify_email(request):
-    request_content = json.loads(request.body)
-    email = request_content.get("email")
-    email_id = request_content.get("email_id")

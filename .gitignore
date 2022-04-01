@@ -8,3 +8,5 @@ courseApp/__pycache__/
 Django_editor_backend/__pycache__/
 identity/__pycache__/
 online_editor/__pycache__/
+online_editor/migrations/__pycache__/
+courseApp/migrations/__pycache__/

@@ -31,6 +31,11 @@ class Person(models.Model):
     class Meta:
         verbose_name = 'user_extended'
 
+# temp email verification
+class VerificationEmail(models.Model):
+    email = models.EmailField()
+    verification_code = models.CharField(max_length=10)
+
 
 # Teacher model
 class Admin(models.Model):

@@ -42,6 +42,8 @@ class MyCourse(models.Model):
                                        auto_now=True)
     views = models.PositiveIntegerField('浏览量', default=0)
     subtopic_id = models.IntegerField(verbose_name='课程id')
+    hint = models.TextField(blank=True, null=True)
+    answer = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.title

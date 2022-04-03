@@ -59,6 +59,7 @@ def save_as_file(file_path, content, id):
     with open(file_path, 'w') as f:
         f.write(content)
     print(file_path)
+    print(content)
     Sources.objects.create(code_id=id, title=os.path.split(file_path)[1], content=content)
 
 

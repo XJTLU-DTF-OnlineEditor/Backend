@@ -652,15 +652,20 @@ def create(request):
         title = content.get("title")
         course_content = content.get("content")
         teacher_id = content.get("teacher_id")
+        hint = content.get("hint")
+        answer = content.get("answer")
 
         if (len(related_topic) > 0) & (len(title) > 0) & (len(course_content) > 0):
             try:
                 topic_id = Topic.objects.get(topic_title=related_topic).topic_id
                 subtopic_id = MyCourse.objects.filter(related_topic_id=topic_id).aggregate(num=Count('id'))['num'] + 1
-                course = MyCourse.objects.create(related_topic_id=topic_id, title=title,
+                course = MyCourse.objects.create(related_topic_id=topic_id,
+                                                 title=title,
                                                  content=course_content,
                                                  teacher_id=teacher_id,
-                                                 subtopic_id=subtopic_id)
+                                                 subtopic_id=subtopic_id,
+                                                 hint=hint,
+                                                 answer=answer)
                 course = json.loads(serializers.serialize("json", {course}))
                 data = course[0]['fields']
                 data['id'] = course[0]['pk']
@@ -685,7 +690,7 @@ def create(request):
             "error_code": 422,
             "msg": "no entity"
         }
-    return JsonResponse(result, status=422)
+    return JsonResponse(result)
 
 
 @require_http_methods(["POST"])
@@ -700,6 +705,8 @@ def edit(request):
         id = content.get("id")
         related_topic = content.get("related_topic")
         title = content.get("title")
+        answer = content.get("answer")
+        hint = content.get("hint")
         content = content.get("content")
 
         # teacher_id = request_body.get("teacher_id")
@@ -714,6 +721,10 @@ def edit(request):
                 course.title = title
             if content:
                 course.content = content
+            if answer:
+                course.answer = answer
+            if hint:
+                course.hint = hint
             course.save()
 
             course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))

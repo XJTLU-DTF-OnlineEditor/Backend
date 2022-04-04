@@ -1,6 +1,7 @@
 from django.db import models
-
 from courseApp.models import MyCourse
+from identity.models import Person
+from django.contrib.auth.models import User
 
 
 class Codes(models.Model):
@@ -10,7 +11,7 @@ class Codes(models.Model):
     compile_status = models.CharField(max_length=100)
     create_time = models.DateTimeField(null=True, auto_now=True)
     course = models.ForeignKey(to=MyCourse, on_delete=models.CASCADE)
-    # user_id = models.ForeignKey(to=U)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
 
 
 class Sources(models.Model):

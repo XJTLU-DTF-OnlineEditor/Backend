@@ -23,6 +23,8 @@ def run_interactive(request):
         code_response = Codes.objects.create(  # 存入数据库
             code_id=id,
             compile_status=True,
+            course_id=course_id,
+            user_id=user_id
         )
         code_response.save()
 

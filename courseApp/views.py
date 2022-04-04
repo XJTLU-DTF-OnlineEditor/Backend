@@ -5,7 +5,7 @@ from django.db.models import Q, Count
 from django.http.response import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import MyCourse, Topic
-from identity.models import Like, Collect
+from identity.student_action_models import Like, Collect
 import json
 from datetime import date, datetime
 from django.core import serializers  # JsonResponse用来将QuerySet序列化
@@ -54,7 +54,7 @@ def search(request):
         keyword = request.GET.get('keyword')  # 获取关键词
         teacher_id = request.GET.get('teacher_id')
         if teacher_id:
-            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(teacher_id=teacher_id))
+            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(related_topic__teacher_id=teacher_id))
         else:
             course_list = MyCourse.objects.filter(title__icontains=keyword)
         if len(course_list) > 0:
@@ -627,6 +627,8 @@ def create(request):
         topic_img = content.get("topic_img")
         teacher_id = content.get("teacher_id")
 
+        print(teacher_id, "====")
+
         fname = None
         if topic_img:
             fname = topic_img['name']
@@ -651,7 +653,6 @@ def create(request):
         related_topic = content.get("related_topic")
         title = content.get("title")
         course_content = content.get("content")
-        teacher_id = content.get("teacher_id")
         hint = content.get("hint")
         answer = content.get("answer")
 
@@ -662,7 +663,6 @@ def create(request):
                 course = MyCourse.objects.create(related_topic_id=topic_id,
                                                  title=title,
                                                  content=course_content,
-                                                 teacher_id=teacher_id,
                                                  subtopic_id=subtopic_id,
                                                  hint=hint,
                                                  answer=answer)

@@ -6,6 +6,7 @@
 
 from django.urls import path
 from identity import views
+from django.conf.urls import include
 
 
 app_name = 'identity'
@@ -16,5 +17,6 @@ urlpatterns = [
     path('currentuser/', views.current_user),
     path('change_password/', views.change_user_password),
     path('icon/', views.edit_usericon),
-    path('edit_userInfo/', views.edit_userInfo)
+    path('edit_userInfo/', views.edit_userInfo),
+    path('send_verification_email/', views.send_verify_email)
 ]

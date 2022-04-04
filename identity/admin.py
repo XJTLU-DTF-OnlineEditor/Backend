@@ -1,23 +1,40 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
-
-from .models import Person
+from .models import Person, VerificationEmail
+from .models import Admin
 
 
-# Register your models here.
+# Register your models here
 
-class PersonInline(admin.StackedInline):
-    model = Person
-    can_delete = False
-    verbose_name = 'person'
+# class PersonInline(admin.StackedInline):
+#     model = Person
+#     can_delete = False
+#     verbose_name_plural = 'person'
+#
+#
+# class UserAdmin(BaseUserAdmin):
+#     inlines = (PersonInline,)
+
+class studentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'token', 'username', 'user_icon', 'tags')
+    verbose_name = "studentProfile"
 
 
-class UserAdmin(BaseUserAdmin):
-    inlines = (PersonInline,)
+admin.site.register(Person, studentAdmin)
 
 
-admin.site.register(Person)
+class teacherAdmin(admin.ModelAdmin):
+    list_display = ('user', 'token', 'admin_name')
 
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+
+admin.site.register(Admin, teacherAdmin)
+
+
+class emailVerifyAdmin(admin.ModelAdmin):
+    list_display = ('verification_code', 'email')
+
+
+admin.site.register(VerificationEmail, emailVerifyAdmin)
+
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)
+# admin.site.register()

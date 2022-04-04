@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'identity',
     'ckeditor',
     'ckeditor_uploader',
-    'channels'
+    'channels',
+    'captcha'
 ]
 
 # HAYSTACK_CONNECTIONS = {
@@ -165,5 +166,14 @@ STATICFILES_DIRS = (
 MEDIA_URL = '/media/'  # 设置保存路径
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 CKEDITOR_UPLOAD_PATH = 'images/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True  # 是否使用TLS安全传输协议(用于在两个通信应用程序之间提供保密性和数据完整性。)
+EMAIL_USE_SSL = False  # 是否使用SSL加密，qq企业邮箱要求使用
+EMAIL_HOST = 'smtp.163.com'  # 发送邮件的邮箱 的 SMTP服务器，这里用了163邮箱
+EMAIL_PORT = 25  # 发件箱的SMTP服务器端口，或者 995是设置了 SSL 加密方式
+EMAIL_HOST_USER = 'xjtluonline_editor@163.com'  # 发送邮件的邮箱地址
+EMAIL_HOST_PASSWORD = 'GAWCDWZBUEBDEMIR'  # 发送邮件的邮箱密码(这里使用的是授权码)
+EMAIL_FROM = "XJTLU_Online_editor<xjtluonline_editor@163.com>"
 
 RESULT_ROOT = os.path.join(BASE_DIR, 'media/result_images/')

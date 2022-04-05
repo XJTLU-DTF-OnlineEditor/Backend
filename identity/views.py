@@ -240,6 +240,7 @@ def current_user(request):
     # print("UserID: " + str(cUser.id))
     if (token != "null") & (request.user.is_authenticated):
         try:
+
             # print("try  s ")
             current_user = request.user
             if currentAuthority == "user":
@@ -297,7 +298,7 @@ def current_user(request):
                 "currentAuthority": "guest"
             }
         }
-        return JsonResponse(msg, status=403)
+        return JsonResponse(msg)
 
 
 """

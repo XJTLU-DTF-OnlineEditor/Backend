@@ -99,24 +99,24 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-# if DEBUG == True:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         }
-#     }
-# else:
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'online_editor',
-        'HOST': '120.26.46.74',
-        'POST': 3306,
-        'USER': 'root',
-        'PASSWORD': ''
-    },
-}
+if DEBUG == True:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'online_editor',
+            'HOST': '120.26.46.74',
+            'POST': 3306,
+            'USER': 'root',
+            'PASSWORD': ''
+        },
+    }
 
 # use the SQLite
 # connect('db.sqlite3')

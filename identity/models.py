@@ -1,9 +1,7 @@
 import os
 import uuid
-
 from django.db import models
 from django.contrib.auth.models import User
-from courseApp.models import Topic
 
 
 def user_directory_path(instance, filename):
@@ -31,6 +29,7 @@ class Person(models.Model):
     class Meta:
         verbose_name = 'user_extended'
 
+
 # temp email verification
 class VerificationEmail(models.Model):
     email = models.EmailField()
@@ -42,31 +41,3 @@ class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=50, verbose_name="Token Auth", null=True, blank=True)
     admin_name = models.CharField(blank=True, null=True, max_length=20)
-
-
-# 学生收藏
-class Collect(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-
-    collect_time = models.DateTimeField(auto_now=True)
-
-
-# 学生点赞
-class Like(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-
-    like_time = models.DateTimeField(auto_now=True)
-
-
-# 学生浏览记录
-class history(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-
-
-# 老师发布的课程
-class teacherCourses(models.Model):
-    teacher = models.ForeignKey(Admin, on_delete=models.CASCADE)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)

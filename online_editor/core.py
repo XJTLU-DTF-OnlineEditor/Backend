@@ -59,6 +59,7 @@ def save_as_file(file_path, content, id):
     with open(file_path, 'w') as f:
         f.write(content)
     print(file_path)
+    print(content)
     Sources.objects.create(code_id=id, title=os.path.split(file_path)[1], content=content)
 
 
@@ -72,7 +73,6 @@ def save_plot_pic(code, id):
 def input_in(id, input):
     try:
         input = input.rstrip() + '\r\n'
-        # 拉进程跑代码
         processes["process_%s" % id].stdin.write(input)
         processes["process_%s" % id].stdin.flush()
     except Exception as e:
@@ -103,13 +103,14 @@ def check_files(path, id):
 
 def send_save_result(id, output, errors):
     check_files(windows_path(Path.root, id), id)
-    if not errors:
+    code_obj = Codes.objects.get(code_id=id)
+    answer = code_obj.course.answer
+    if not errors and answer == output.strip():
         notify_ws_clients(id, "result", output)
     else:
-        notify_ws_clients(id, "error", output+errors)
+        notify_ws_clients(id, "error", output + errors)
     terminate_container(id)
     try:
-        code_obj = Codes.objects.get(code_id=id)
         code_obj.code_result = output
         code_obj.errors = errors
         code_obj.save()
@@ -128,7 +129,7 @@ def notify_ws_clients(code_id, message, value):
         'data': value
     }
     if message == 'file':
-        notification['filename'] = value.replace(windows_path(Path.root, code_id)+"/", "")
+        notification['filename'] = value.replace(windows_path(Path.root, code_id) + "/", "")
         with open(value) as f:
             notification['data'] = f.read()
     channel_layer = get_channel_layer()
@@ -195,5 +196,5 @@ def interactive_input_output(id):
         for error in processes["process_%s" % id].stderr.readlines():
             if not str(error).startswith(("WARNING", "Looking in indexes")):
                 errors += error
-        errors = errors.replace(linux_path(Path.root, id)+'/', '')
-        send_save_result(id, output, errors)
+        errors = errors.replace(linux_path(Path.root, id) + '/', '')
+    send_save_result(id, output, errors)

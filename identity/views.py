@@ -6,16 +6,14 @@
 
 import json
 import random
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from Django_editor_backend import settings
-from identity.forms import UploadImageForm, UserRegisterForm
-from identity.models import Person, Admin, teacherCourses, VerificationEmail
+from identity.forms import UploadImageForm
+from identity.models import Person, Admin, VerificationEmail
 from utility.utility import _exist_username, required_login, generateToken
 from django.core.mail import send_mail
 
@@ -240,17 +238,16 @@ def current_user(request):
     # print("UserID: " + str(cUser.id))
     if (token != "null") & (request.user.is_authenticated):
         try:
-
-            # print("try  s ")
             current_user = request.user
             if currentAuthority == "user":
                 student = Person.objects.get(token=token)
                 user_content = {
                     "currentAuthority": "user",
+                    "userid": student.user_id,
                     "username": str(student.username),
                     "email": str(current_user.username),
                     "tags": str(current_user.person.tags),
-                    "avator": "http://127.0.0.1:8000/media/" + str(student.user_icon)
+                    "avator": "/media/" + str(student.user_icon)
                 }
                 response = {
                     "status": "ok",
@@ -261,20 +258,11 @@ def current_user(request):
                 return JsonResponse(response, status=200)
             elif currentAuthority == "admin":
                 teacher = Admin.objects.get(token=token)
-                teacherTopic_list = teacherCourses.objects.filter(teacher__token=token)
-                # Add teacher's topics to a list
-                topic_collection = []
-                for item in teacherTopic_list:
-                    topic_dict = {
-                        "topic_id": item.topic.topic_id,
-                        "topic_title": item.topic.topic_title,
-                    }
-                    topic_collection.append(topic_dict)
                 user_content = {
+                    "userid": teacher.user_id,
                     "currentAuthority": "admin",
                     "username": str(teacher.admin_name),
                     "email": str(teacher.user.username),
-                    "topics": topic_collection
                 }
                 response = {
                     "status": "ok",

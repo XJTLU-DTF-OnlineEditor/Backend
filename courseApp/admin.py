@@ -7,12 +7,10 @@ admin.site.site_title = "Python 在线学习后台管理网站"
 """
 Ueditor 来插入课程文件
 """
-
-
 class MyCourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'related_topic', 'update_date', 'views')
+    list_display = ('title', 'update_date', 'views')
     style_fields = {'description': 'ueditor'}
-    search_fields = ('title', 'realated_topic')
+    search_fields = ('title', 'related_topic')
 
     def related_topics(self):
         return MyCourse.related_topic.topic_title

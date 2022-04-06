@@ -5,7 +5,7 @@ from django.db.models import Q, Count
 from django.http.response import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import MyCourse, Topic
-from identity.models import Like, Collect
+from identity.student_action_models import Like, Collect
 import json
 from datetime import date, datetime
 from django.core import serializers  # JsonResponse用来将QuerySet序列化
@@ -54,7 +54,7 @@ def search(request):
         keyword = request.GET.get('keyword')  # 获取关键词
         teacher_id = request.GET.get('teacher_id')
         if teacher_id:
-            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(teacher_id=teacher_id))
+            course_list = MyCourse.objects.filter(Q(title__icontains=keyword) & Q(related_topic__teacher_id=teacher_id))
         else:
             course_list = MyCourse.objects.filter(title__icontains=keyword)
         if len(course_list) > 0:
@@ -627,6 +627,8 @@ def create(request):
         topic_img = content.get("topic_img")
         teacher_id = content.get("teacher_id")
 
+        print(teacher_id, "====")
+
         fname = None
         if topic_img:
             fname = topic_img['name']
@@ -651,16 +653,19 @@ def create(request):
         related_topic = content.get("related_topic")
         title = content.get("title")
         course_content = content.get("content")
-        teacher_id = content.get("teacher_id")
+        hint = content.get("hint")
+        answer = content.get("answer")
 
         if (len(related_topic) > 0) & (len(title) > 0) & (len(course_content) > 0):
             try:
                 topic_id = Topic.objects.get(topic_title=related_topic).topic_id
                 subtopic_id = MyCourse.objects.filter(related_topic_id=topic_id).aggregate(num=Count('id'))['num'] + 1
-                course = MyCourse.objects.create(related_topic_id=topic_id, title=title,
+                course = MyCourse.objects.create(related_topic_id=topic_id,
+                                                 title=title,
                                                  content=course_content,
-                                                 teacher_id=teacher_id,
-                                                 subtopic_id=subtopic_id)
+                                                 subtopic_id=subtopic_id,
+                                                 hint=hint,
+                                                 answer=answer)
                 course = json.loads(serializers.serialize("json", {course}))
                 data = course[0]['fields']
                 data['id'] = course[0]['pk']
@@ -685,7 +690,7 @@ def create(request):
             "error_code": 422,
             "msg": "no entity"
         }
-    return JsonResponse(result, status=422)
+    return JsonResponse(result)
 
 
 @require_http_methods(["POST"])
@@ -700,6 +705,8 @@ def edit(request):
         id = content.get("id")
         related_topic = content.get("related_topic")
         title = content.get("title")
+        answer = content.get("answer")
+        hint = content.get("hint")
         content = content.get("content")
 
         # teacher_id = request_body.get("teacher_id")
@@ -714,6 +721,10 @@ def edit(request):
                 course.title = title
             if content:
                 course.content = content
+            if answer:
+                course.answer = answer
+            if hint:
+                course.hint = hint
             course.save()
 
             course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))

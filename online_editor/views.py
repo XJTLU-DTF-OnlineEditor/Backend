@@ -1,4 +1,6 @@
 import os.path
+import shutil
+
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from Django_editor_backend.settings import BASE_DIR
@@ -14,11 +16,15 @@ def run_interactive(request):
     lang = request_body.get("lang")
     id = request_body.get("id")
     filelist = request_body.get("filelist")
+    course_id = request_body.get("course_id")
+    user_id = request_body.get("user_id")
 
     try:
         code_response = Codes.objects.create(  # 存入数据库
             code_id=id,
             compile_status=True,
+            course_id=course_id,
+            user_id=user_id
         )
         code_response.save()
 
@@ -54,11 +60,8 @@ def pic(request):
     request_body = json.loads(request.body)
     path = request_body.get("path")
     abs_path = BASE_DIR + path
-    dir_name = os.path.dirname(abs_path)
     try:
-        os.remove(abs_path)
-        if not os.listdir(dir_name):
-            os.rmdir(dir_name)
+        shutil.rmtree(abs_path)
         result = {
             "error_code": 200,
             "msg": "success",

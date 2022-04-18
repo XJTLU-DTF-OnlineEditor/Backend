@@ -13,6 +13,8 @@ from .models import Admin
 #
 # class UserAdmin(BaseUserAdmin):
 #     inlines = (PersonInline,)
+from .student_action_models import History, Collect
+
 
 class studentAdmin(admin.ModelAdmin):
     list_display = ('user', 'token', 'username', 'user_icon', 'tags')
@@ -35,6 +37,20 @@ class emailVerifyAdmin(admin.ModelAdmin):
 
 admin.site.register(VerificationEmail, emailVerifyAdmin)
 
+
+class HistoryAdmin(admin.ModelAdmin):
+    list_display = ("person", "topic", "last_practice_time")
+    filter_vertical = ("course",)  # 多对多显示
+
+
+admin.site.register(History, HistoryAdmin)
+
+
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ("person", "topic", "collect_time")
+
+
+admin.site.register(Collect, CollectionAdmin)
 # admin.site.unregister(User)
 # admin.site.register(User, UserAdmin)
 # admin.site.register()

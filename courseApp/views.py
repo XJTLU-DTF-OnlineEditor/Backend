@@ -1,11 +1,15 @@
 import os
 import shutil
+import time
+
 from django.db import connection
 from django.db.models import Q, Count
 from django.http.response import JsonResponse
 from django.views.decorators.http import require_http_methods
+
+from identity.models import Person
 from .models import MyCourse, Topic
-from identity.student_action_models import Like, Collect
+from identity.student_action_models import Like, Collect, History
 import json
 from datetime import date, datetime
 from django.core import serializers  # JsonResponse用来将QuerySet序列化
@@ -137,7 +141,7 @@ def top_topic(request, num):
             top_topic = Topic.objects.get(pk=key)
             top_topic_img = ''
             if top_topic.topic_img:
-                top_topic_img = str("http://120.26.46.74:4000/media/" + str(top_topic.topic_img))
+                top_topic_img = str("/media/" + str(top_topic.topic_img))
             else:
                 top_topic_img = None
             topic_dict = {
@@ -913,3 +917,459 @@ def delete(request):
         }
 
     return JsonResponse(result)
+
+
+'''
+POST
+->
+Header: 
+{
+    http_token: string  # User identifier
+    currentAuthority: string  # User type
+}
+Body:
+{
+    "topic": String,  # topic title
+    "course_id": int,  # course progress id
+    "last_practice_time": String  # last open date
+}
+<-
+{
+    "status": "ok",
+    "error_code": int,
+    "msg": "success"
+}
+'''
+
+
+@require_http_methods(["POST"])
+def add_user_courses_progress(request):
+    token = request.META.get("HTTP_TOKEN")
+    if token == "null":
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "current_authority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+
+    current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
+    if (token != "null") & request.user.is_authenticated:
+        try:
+            current_user = request.user
+            request_content = json.loads(request.body)
+            topic = request_content.get("topic")
+            course_id = request_content.get("course_id")
+            if current_authority == "user":
+                student_obj = Person.objects.get(token=token)
+                topic_obj = Topic.objects.get(topic_title=topic)
+                course_obj = MyCourse.objects.get(related_topic__topic_title=topic, subtopic_id=course_id)
+                last_practice_time = request_content.get("last_practice_time")
+                print(last_practice_time)
+                print(topic)
+                print(course_id)
+                # If cannot find user history, add a new history
+                try:
+                    history_obj = History.objects.get(person__token=token,
+                                                      topic__topic_title=topic)  # get course record
+                except Exception as e:
+                    new_history_obj = History.objects.create(person=student_obj, topic=topic_obj,
+                                                             last_practice_time=last_practice_time)
+                    new_history_obj.save()
+                    new_history_obj.course.add(course_obj)
+                    new_history_obj.save()
+                    msg = {
+                        "status": "ok",
+                        "error_code": 200,
+                        "msg": "Add user history success!"
+                    }
+                    return JsonResponse(msg)
+                history_obj.last_practice_time = last_practice_time  # Update last practice time
+                history_obj.save()
+                pre_courses = history_obj.course.all()
+                course_list = []
+                for course in pre_courses:  # find user history courses
+                    # print(course.title)
+                    course_list.append(course.subtopic_id)
+                print(course_list)
+                if course_id not in course_list:  # If user didn't browse the course before, update the previous courses
+                    course_list.append(course_id)
+                    history_obj.course.add(
+                        MyCourse.objects.get(related_topic__topic_title=topic, subtopic_id=course_id))
+                    history_obj.course.add(course_obj)
+                    history_obj.save()
+                print(history_obj.course.all())
+                msg = {
+                    "status": "ok",
+                    "error_code": 200,
+                    "msg": "user course progress update success."
+                }
+                return JsonResponse(msg)
+            else:
+                msg = {
+                    "status": "error",
+                    "error_code": 422,
+                    "msg": "user type is not correct."
+                }
+                return JsonResponse(msg)
+        except Exception as e:
+            msg = {
+                "status": "error",
+                "error_code": 500,
+                "msg": str(e)
+            }
+            return JsonResponse(msg)
+    msg = {
+        "status": "error",
+        "error_code": 422,
+        "msg": "user authentication failed."
+    }
+    return JsonResponse(msg)
+
+
+"""
+POST
+POST
+->
+Header: 
+{
+    http_token: string  # User identifier
+    currentAuthority: string  # User type
+}
+Body:
+{
+    "topic": String,  # topic title
+}
+<-
+{
+    "status": "ok",
+    "error_code": int,
+    "msg": "success"
+}
+"""
+
+
+def remove_user_progress(request):
+    token = request.META.get("HTTP_TOKEN")
+    if token == "null":
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "current_authority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+
+    current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
+    if (token != "null") & request.user.is_authenticated:
+        try:
+            current_user = request.user
+            request_content = json.loads(request.body)
+            topic = request_content.get("topic")
+            if current_authority == "user":
+                student_obj = Person.objects.get(token=token)
+                topic_obj = Topic.objects.get(topic_title=topic)
+                History.objects.get(person=student_obj, topic=topic_obj).delete()
+                msg = {
+                    "status": "ok",
+                    "error_code": 200,
+                    "msg": "user course progress delete success."
+                }
+                return JsonResponse(msg)
+            else:
+                msg = {
+                    "status": "error",
+                    "error_code": 422,
+                    "msg": "user type is not correct."
+                }
+                return JsonResponse(msg)
+        except Exception as e:
+            msg = {
+                "status": "error",
+                "error_code": 500,
+                "msg": str(e)
+            }
+            return JsonResponse(msg)
+    msg = {
+        "status": "error",
+        "error_code": 422,
+        "msg": "user authentication failed."
+    }
+    return JsonResponse(msg)
+
+
+'''
+POST
+->
+Header: 
+{
+    http_token: string  # User identifier
+    currentAuthority: string  # User type
+}
+Body:
+{
+    "topic": String,  # topic title
+    "course_id": int,  # course progress id
+    "last_practice_time": String  # last open date
+}
+<-
+{
+    "status": "ok",
+    "error_code": int,
+    "msg": "success"
+}
+'''
+
+
+def user_change_course_progress(request):
+    token = request.META.get("HTTP_TOKEN")
+    if token == "null":
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "current_authority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+
+    current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
+    if (token != "null") & request.user.is_authenticated:
+        try:
+            current_user = request.user
+            request_content = json.loads(request.body)
+            topic = request_content.get("topic")
+            course_id = request_content.get("course_id")
+            if current_authority == "user":
+                student_obj = Person.objects.get(token=token)
+                topic_obj = Topic.objects.get(topic_title=topic)
+                course_obj = MyCourse.objects.get(related_topic__topic_title=topic, subtopic_id=course_id)
+                last_practice_time = request_content.get("last_practice_time")
+                # print(last_practice_time)
+                # print(topic)
+                # print(course_id)
+                # If cannot find user history, add a new history
+                try:
+                    history_obj = History.objects.get(person__token=token,
+                                                      topic__topic_title=topic)  # get course record
+                except Exception as e:
+                    new_history_obj = History.objects.create(person=student_obj, topic=topic_obj,
+                                                             last_practice_time=last_practice_time)
+                    new_history_obj.save()
+                    new_history_obj.course.add(course_obj)
+                    new_history_obj.save()
+                    msg = {
+                        "status": "ok",
+                        "error_code": 200,
+                        "msg": "Add user history success!"
+                    }
+                    return JsonResponse(msg)
+                history_obj.last_practice_time = last_practice_time  # Update last practice time
+                history_obj.save()
+                pre_courses = history_obj.course.all()
+                course_list = []
+                for course in pre_courses:  # find user history courses
+                    # print(course.title)
+                    course_list.append(course.subtopic_id)
+                # print(course_list)
+                history_obj.course.remove(course_list.pop())
+                history_obj.course.add(course_id)
+                history_obj.save()
+                # print(history_obj.course.all())
+                msg = {
+                    "status": "ok",
+                    "error_code": 200,
+                    "msg": "user course progress change success."
+                }
+                return JsonResponse(msg)
+            else:
+                msg = {
+                    "status": "error",
+                    "error_code": 422,
+                    "msg": "user type is not correct."
+                }
+                return JsonResponse(msg)
+        except Exception as e:
+            msg = {
+                "status": "error",
+                "error_code": 500,
+                "msg": str(e)
+            }
+            return JsonResponse(msg)
+    msg = {
+        "status": "error",
+        "error_code": 422,
+        "msg": "user authentication failed."
+    }
+    return JsonResponse(msg)
+
+
+"""
+POST
+->
+Header: 
+{
+    http_token: string  # User identifier
+    currentAuthority: string  # User type
+}
+Body:
+{
+    "topic": String,  # topic title
+    "course_id": int,  # course progress id
+    "collect_time": String  # collect date
+}
+<-
+{
+    "status": "ok",
+    "error_code": int,
+    "msg": "success"
+}
+"""
+
+
+def add_user_collection(request):
+    token = request.META.get("HTTP_TOKEN")
+    if token == "null":
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "current_authority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+    current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
+    if (token != "null") & request.user.is_authenticated:
+        try:
+            request_content = json.loads(request.body)
+            topic = request_content.get("topic")
+            collection_time = request_content.get("collect_time")
+            if current_authority == "user":
+                student_obj = Person.objects.get(token=token)
+                collected_objs = Collect.objects.filter(person=student_obj)
+                # if the student have not collected this course, add it, else do not add it
+                topic_obj = Topic.objects.get(topic_title=topic)
+                print(topic_obj.topic_title)
+                collected_topic_list = []
+                for obj in collected_objs:
+                    collected_topic_list.append(obj.topic)
+                print(collected_topic_list)
+                if topic_obj not in collected_topic_list:
+                    new_collection_obj = Collect.objects.create(person=student_obj, topic=topic_obj,
+                                                                collect_time=collection_time)
+                    new_collection_obj.save()
+                    msg = {
+                        "status": "ok",
+                        "error_code": 200,
+                        "msg": "Add user collection success!"
+                    }
+                    return JsonResponse(msg)
+                else:
+                    msg = {
+                        "status": "error",
+                        "error_code": 204,
+                        "msg": "user collection already exists."
+                    }
+                    return JsonResponse(msg)
+            else:
+                msg = {
+                    "status": "error",
+                    "error_code": 201,
+                    "msg": "user type not correct"
+                }
+                return JsonResponse(msg)
+        except Exception as e:
+            msg = {
+                "status": "error",
+                "error_code": 500,
+                "msg": str(e)
+            }
+            return JsonResponse(msg)
+
+
+"""
+POST
+->
+Header: 
+{
+    http_token: string  # User identifier
+    currentAuthority: string  # User type
+}
+Body:
+{
+    "topic": String,  # topic title
+    "course_id": int,  # course progress id
+    "collect_time": String  # collect date
+}
+<-
+{
+    "status": "ok",
+    "error_code": int,
+    "msg": "success"
+}
+"""
+
+
+def delete_user_collection(request):
+    token = request.META.get("HTTP_TOKEN")
+    if token == "null":
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "current_authority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+    current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
+    if (token != "null") & request.user.is_authenticated:
+        try:
+            request_content = json.loads(request.body)
+            topic = request_content.get("topic")
+            if current_authority == "user":
+                student_obj = Person.objects.get(token=token)
+                collected_objs = Collect.objects.filter(person=student_obj)
+                # if the student have collected this course, delete it, else return not found
+                topic_obj = Topic.objects.get(topic_title=topic)
+                print(topic_obj.topic_title)
+                collected_topic_list = []
+                for obj in collected_objs:
+                    collected_topic_list.append(obj.topic)
+                print(collected_topic_list)
+                if topic_obj in collected_topic_list:
+                    Collect.objects.get(person=student_obj, topic__topic_title=topic).delete()
+                    msg = {
+                        "status": "ok",
+                        "error_code": 200,
+                        "msg": "delete collection success!"
+                    }
+                    return JsonResponse(msg)
+                else:
+                    msg = {
+                        "status": "error",
+                        "error_code": 204,
+                        "msg": "user collection not found"
+                    }
+                    return JsonResponse(msg)
+            else:
+                msg = {
+                    "status": "error",
+                    "error_code": 201,
+                    "msg": "user type not correct"
+                }
+                return JsonResponse(msg)
+        except Exception as e:
+            msg = {
+                "status": "error",
+                "error_code": 500,
+                "msg": str(e)
+            }
+            return JsonResponse(msg)

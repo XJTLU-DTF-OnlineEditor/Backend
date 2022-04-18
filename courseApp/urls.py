@@ -19,5 +19,10 @@ urlpatterns = [
     path('delete/', views.delete),
     path('upload_topic_img/', views.upload_topic_img),
     path('upload_course_img/<str:topic_title>/', views.upload_course_img),
-    path('delete_img/', views.delete_img)
+    path('delete_img/', views.delete_img),
+    path('add_user_progress/', views.add_user_courses_progress),
+    path('change_user_progress/', views.user_change_course_progress),
+    path('remove_user_progress/', views.remove_user_progress),
+    path('add_user_collection/', views.add_user_collection),
+    path('delete_user_collection/', views.delete_user_collection)
 ]

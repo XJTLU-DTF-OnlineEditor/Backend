@@ -10,7 +10,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-
 from Django_editor_backend import settings
 from identity.forms import UploadImageForm
 from identity.models import Person, Admin, VerificationEmail
@@ -18,8 +17,6 @@ from utility.utility import _exist_username, required_login, generateToken
 from django.core.mail import send_mail
 
 # Create your views here.
-
-
 """
 Post /V1/user/register
 -> {
@@ -28,10 +25,7 @@ Post /V1/user/register
     "username": String
     "password: String (3 < length < 15)
 }
-
 """
-
-
 @require_http_methods(["POST"])
 def user_register(request):
     request_content = json.loads(request.body)
@@ -137,8 +131,6 @@ def user_register(request):
     "currentAuthority": currentAuthority
 }
 """
-
-
 # POST /V1/user/login
 @require_http_methods(["POST"])
 def user_login(request):

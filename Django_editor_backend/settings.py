@@ -111,10 +111,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'online_editor',
-        'HOST': '120.26.46.74',
+        'HOST': '47.111.13.213',
         'POST': 3306,
         'USER': 'root',
-        'PASSWORD': ''
+        'PASSWORD': 'Zwh20000529,'
     },
 }
 

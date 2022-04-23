@@ -11,8 +11,10 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from Django_editor_backend import settings
+from courseApp.models import MyCourse, Topic
 from identity.forms import UploadImageForm
 from identity.models import Person, Admin, VerificationEmail
+from identity.student_action_models import History, Collect
 from utility.utility import _exist_username, required_login, generateToken
 from django.core.mail import send_mail
 
@@ -205,6 +207,70 @@ def user_logout(request):
     return JsonResponse(msg, status=200)
 
 
+'''
+GET
+<- header: {
+    "token": string
+    "currentAuthority": string
+}
+
+->
+currentAuthority == "user":
+    {
+        "status": "ok",
+        "error_code": 200,
+        "msg": "get user success",
+        "data": {
+            "currentAuthority": "user",
+            "userid": student.user_id,
+            "username": str(student.username),
+            "email": str(current_user.username),
+            "tags": str(current_user.person.tags),
+            "avator": "/media/" + str(student.user_icon),
+            "history": {
+                "topic": topic,
+                "topic_img": str("http://120.26.46.74:4000/media/") + str(topic_pic),
+                "progress": progress,
+                "last_practice_time": last_practice_time,
+                "finished_courses": [],
+                "unfinished_courses": [],
+                "progress_course": {
+                    "title": progress_course,
+                    "id": progress_course_id
+                }
+            }
+        } 
+    }
+currentAuthority == "admin":
+{
+    "status": "ok",
+    "error_code": 200,
+    "msg": "get user success",
+     "data": {
+        "currentAuthority": "user",
+        "userid": student.user_id,
+        "username": str(student.username),
+        "email": str(current_user.username),
+        "tags": str(current_user.person.tags),
+        "avator": "/media/" + str(student.user_icon),
+            "history": {
+                "topic": topic,
+                "topic_img": str("http://120.26.46.74:4000/media/") + str(topic_pic),
+                "progress": progress,
+                "last_practice_time": last_practice_time,
+                "finished_courses": [],
+                "unfinished_courses": [],
+                "progress_course": {
+                    "title": progress_course,
+                    "id": progress_course_id
+                }
+            }
+        } 
+    }
+
+'''
+
+
 # GET /v1/user/current-account
 @require_http_methods(["GET"])
 def current_user(request):
@@ -233,13 +299,64 @@ def current_user(request):
             current_user = request.user
             if currentAuthority == "user":
                 student = Person.objects.get(token=token)
+                history_objs = History.objects.filter(person__token=token)
+                history_list = []
+                for history_obj in history_objs:  # add history into one list
+                    finished_course_list = []
+                    # find the last course which is the one user is working on
+                    history_num = history_obj.course.count()
+                    for course in history_obj.course.all():  # find users finished courses
+                        finished_course_list.append(course.title)
+                    progress_course = finished_course_list[history_num - 1]
+                    progress_course_id = MyCourse.objects.get(
+                        title=progress_course).subtopic_id  # find the corresponding id of progress course
+                    topic = history_obj.topic.topic_title
+                    topic_pic = history_obj.topic.topic_img
+                    # Calculate progress
+                    all_courses_obj = MyCourse.objects.filter(related_topic__topic_title=topic)
+                    courses_num = all_courses_obj.count()
+                    all_courses_list = []
+                    for courses in all_courses_obj:  # find all the related courses
+                        all_courses_list.append(courses.title)
+                    unfinished_courses_list = []
+                    for course in all_courses_list:  # find all the unfinished courses
+                        if course not in finished_course_list:
+                            unfinished_courses_list.append(course)
+                    finished_course_list.pop()  # Pop the last in progress one
+                    progress = "%s/%s" % (len(finished_course_list), courses_num)
+                    last_practice_time = history_obj.last_practice_time
+                    history_list.append({
+                        "topic": topic,
+                        "topic_img": str("http://120.26.46.74:4000/media/") + str(topic_pic),
+                        "progress": progress,
+                        "last_practice_time": last_practice_time,
+                        "finished_courses": finished_course_list,
+                        "unfinished_courses": unfinished_courses_list,
+                        "progress_course": {
+                            "title": progress_course,
+                            "id": progress_course_id
+                        }
+                    })
+                collection_objs = Collect.objects.filter(person__token=token)
+                collection_list = []
+                for collection in collection_objs:
+                    topic_obj = collection.topic
+                    collection_dict = {
+                        "topic_title": topic_obj.topic_title,
+                        "topic_content": topic_obj.topic_description,
+                        "topic_img": str("/media/") + str(topic_obj.topic_img),
+                        "collection_time": collection.collect_time
+                    }
+                    collection_list.append(collection_dict)
                 user_content = {
                     "currentAuthority": "user",
                     "userid": student.user_id,
                     "username": str(student.username),
                     "email": str(current_user.username),
                     "tags": str(current_user.person.tags),
-                    "avator": "/media/" + str(student.user_icon)
+                    "avator": "/media/" + str(student.user_icon),
+                    "history": history_list,
+                    "collections": collection_list
                 }
                 response = {
                     "status": "ok",
@@ -451,3 +568,30 @@ def edit_userInfo(request):
             "msg": "account needs to be authenticated"
         }
         return JsonResponse(msg, status=401)
+
+
+@require_http_methods(["GET"])
+def user_course_progress(request):
+    token = request.META.get("HTTP_TOKEN")
+    cuser = request.user
+    print(cuser)
+    if token == "null":
+        print("guest")
+        msg = {
+            "status": "ok",
+            "error_code": 403,
+            "msg": "user not login",
+            "data": {
+                "currentAuthority": "guest"
+            }
+        }
+        return JsonResponse(msg)
+    current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
+    # if (token != "null") & request.user.is_authenticated:
+    #     try:
+    #         current_user = request.user
+
+    msg = {
+
+    }
+    return JsonResponse(msg)

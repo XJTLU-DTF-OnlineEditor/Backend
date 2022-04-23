@@ -18,5 +18,6 @@ urlpatterns = [
     path('change_password/', views.change_user_password),
     path('icon/', views.edit_usericon),
     path('edit_userInfo/', views.edit_userInfo),
-    path('send_verification_email/', views.send_verify_email)
+    path('send_verification_email/', views.send_verify_email),
+    path('user_course_progress/', views.user_course_progress)
 ]

@@ -455,14 +455,16 @@ def Courses(request, topic_title):
         course_list = MyCourse.objects.all() \
             .filter(related_topic__topic_title=topic_title) \
             .order_by('subtopic_id')
+        topic = Topic.objects.get(topic_title=topic_title)
         if len(course_list) > 0:
             course_list = json.loads(serializers.serialize("json", course_list))
             result = {
                 "error_code": 200,
                 "msg": 'success',
                 'topic_title': topic_title,
-                'topic_img': str(Topic.objects.get(topic_title=topic_title).topic_img),
-                'topic_content': Topic.objects.get(topic_title=topic_title).topic_content,
+                'topic_description': topic.topic_description,
+                'topic_img': str(topic.topic_img),
+                'topic_content': topic.topic_content,
                 'course_list': course_list,
             }
         else:

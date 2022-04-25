@@ -303,14 +303,14 @@ def current_user(request):
                 history_list = []
                 for history_obj in history_objs:  # add history into one list
                     finished_course_list = []
-                    # find the last course which is the one user is working on
-                    history_num = history_obj.course.count()
-                    for course in history_obj.course.all():  # find users finished courses
-                        finished_course_list.append(course.title)
-                    progress_course = finished_course_list[history_num - 1]
-                    progress_course_id = MyCourse.objects.get(
-                        title=progress_course).subtopic_id  # find the corresponding id of progress course
                     topic = history_obj.topic.topic_title
+                    progress_course_id = history_obj.progress_course
+                    progress_course_title = MyCourse.objects.get(related_topic__topic_title=topic,
+                                                                 subtopic_id=progress_course_id).title
+                    # find the last course which is the one user is working on
+                    finished_course_num = history_obj.finished_courses.count()
+                    for course in history_obj.finished_courses.all():  # find users finished courses
+                        finished_course_list.append(course.title)
                     topic_pic = history_obj.topic.topic_img
                     # Calculate progress
                     all_courses_obj = MyCourse.objects.filter(related_topic__topic_title=topic)
@@ -322,8 +322,7 @@ def current_user(request):
                     for course in all_courses_list:  # find all the unfinished courses
                         if course not in finished_course_list:
                             unfinished_courses_list.append(course)
-                    finished_course_list.pop()  # Pop the last in progress one
-                    progress = "%s/%s" % (len(finished_course_list), courses_num)
+                    progress = "%s/%s" % (finished_course_num, courses_num)
                     last_practice_time = history_obj.last_practice_time
                     history_list.append({
                         "topic": topic,
@@ -333,7 +332,7 @@ def current_user(request):
                         "finished_courses": finished_course_list,
                         "unfinished_courses": unfinished_courses_list,
                         "progress_course": {
-                            "title": progress_course,
+                            "title": progress_course_title,
                             "id": progress_course_id
                         }
                     })

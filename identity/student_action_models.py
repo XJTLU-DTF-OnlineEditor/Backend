@@ -21,5 +21,6 @@ class Like(models.Model):
 class History(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    course = models.ManyToManyField(to=MyCourse, verbose_name="course_progress")
+    progress_course = models.IntegerField(verbose_name="progress_course_id", null=True)  # the course user is currently studying
+    finished_courses = models.ManyToManyField(to=MyCourse, verbose_name="finished_courses")  # user finished courses
     last_practice_time = models.DateTimeField(verbose_name="上次练习时间", name="last_practice_time")

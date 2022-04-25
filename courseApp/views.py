@@ -972,44 +972,23 @@ def add_user_courses_progress(request):
             topic = request_content.get("topic")
             course_id = request_content.get("course_id")
             if current_authority == "user":
-                student_obj = Person.objects.get(token=token)
-                topic_obj = Topic.objects.get(topic_title=topic)
                 course_obj = MyCourse.objects.get(related_topic__topic_title=topic, subtopic_id=course_id)
                 last_practice_time = request_content.get("last_practice_time")
-                print(last_practice_time)
-                print(topic)
-                print(course_id)
-                # If cannot find user history, add a new history
-                try:
-                    history_obj = History.objects.get(person__token=token,
-                                                      topic__topic_title=topic)  # get course record
-                except Exception as e:
-                    new_history_obj = History.objects.create(person=student_obj, topic=topic_obj,
-                                                             last_practice_time=last_practice_time)
-                    new_history_obj.save()
-                    new_history_obj.course.add(course_obj)
-                    new_history_obj.save()
-                    msg = {
-                        "status": "ok",
-                        "error_code": 200,
-                        "msg": "Add user history success!"
-                    }
-                    return JsonResponse(msg)
+                # update user history
+                history_obj = History.objects.get(person__token=token, topic__topic_title=topic)  # get course record
                 history_obj.last_practice_time = last_practice_time  # Update last practice time
                 history_obj.save()
-                pre_courses = history_obj.course.all()
+                finished_courses = history_obj.finished_courses.all()
                 course_list = []
-                for course in pre_courses:  # find user history courses
+                for course in finished_courses:  # find user history courses
                     # print(course.title)
                     course_list.append(course.subtopic_id)
                 print(course_list)
-                if course_id not in course_list:  # If user didn't browse the course before, update the previous courses
+                if course_id not in course_list:  # If user didn't pass the course before, update the finished courses
                     course_list.append(course_id)
-                    history_obj.course.add(
-                        MyCourse.objects.get(related_topic__topic_title=topic, subtopic_id=course_id))
-                    history_obj.course.add(course_obj)
+                    history_obj.finished_courses.add(course_obj)
                     history_obj.save()
-                print(history_obj.course.all())
+                print(history_obj.finished_courses.all())
                 msg = {
                     "status": "ok",
                     "error_code": 200,
@@ -1044,7 +1023,7 @@ POST
 ->
 Header: 
 {
-    http_token: string  # User identifier
+    token: string  # User identifier
     currentAuthority: string  # User type
 }
 Body:
@@ -1112,6 +1091,7 @@ def remove_user_progress(request):
 
 
 '''
+user_change_course_progress
 POST
 ->
 Header: 
@@ -1168,9 +1148,8 @@ def user_change_course_progress(request):
                                                       topic__topic_title=topic)  # get course record
                 except Exception as e:
                     new_history_obj = History.objects.create(person=student_obj, topic=topic_obj,
+                                                             progress_course=course_id,
                                                              last_practice_time=last_practice_time)
-                    new_history_obj.save()
-                    new_history_obj.course.add(course_obj)
                     new_history_obj.save()
                     msg = {
                         "status": "ok",
@@ -1179,15 +1158,7 @@ def user_change_course_progress(request):
                     }
                     return JsonResponse(msg)
                 history_obj.last_practice_time = last_practice_time  # Update last practice time
-                history_obj.save()
-                pre_courses = history_obj.course.all()
-                course_list = []
-                for course in pre_courses:  # find user history courses
-                    # print(course.title)
-                    course_list.append(course.subtopic_id)
-                # print(course_list)
-                history_obj.course.remove(course_list.pop())
-                history_obj.course.add(course_id)
+                history_obj.progress_course = course_id
                 history_obj.save()
                 # print(history_obj.course.all())
                 msg = {

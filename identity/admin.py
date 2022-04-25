@@ -40,9 +40,9 @@ admin.site.register(VerificationEmail, emailVerifyAdmin)
 
 class HistoryAdmin(admin.ModelAdmin):
     list_display = ("person", "topic", "last_practice_time")
-    filter_vertical = ("course",)  # 多对多显示
+    filter_vertical = ("finished_courses",)  # 多对多显示
 
-
+    
 admin.site.register(History, HistoryAdmin)
 
 

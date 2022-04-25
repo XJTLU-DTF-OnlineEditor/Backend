@@ -461,6 +461,7 @@ def Courses(request, topic_title):
             result = {
                 "error_code": 200,
                 "msg": 'success',
+                'topic_id': topic.topic_id,
                 'topic_title': topic_title,
                 'topic_description': topic.topic_description,
                 'topic_img': str(topic.topic_img),
@@ -630,6 +631,7 @@ def create(request):
     if request_entity == "Topic":
         topic_title = content.get("topic_title")
         topic_content = content.get("topic_content")
+        topic_description = content.get("topic_description")
         topic_img = content.get("topic_img")
         teacher_id = content.get("teacher_id")
 
@@ -641,6 +643,7 @@ def create(request):
         if (len(topic_title) > 0) & (len(topic_content) > 0):
             topic = Topic.objects.create(topic_title=topic_title,
                                          topic_content=topic_content,
+                                         topic_description=topic_description,
                                          topic_img=fname,
                                          teacher_id=teacher_id)
             # if topic[1]:
@@ -767,6 +770,7 @@ def edit(request):
         topic_title = topic_info.get("topic_title")
         topic_img = topic_info.get("topic_img")
         topic_content = topic_info.get("topic_content")
+        topic_description = topic_info.get("topic_description")
 
         try:
             topic = Topic.objects.get(topic_id=topic_id)
@@ -774,6 +778,8 @@ def edit(request):
                 topic.title = topic_title
             if topic_img:
                 topic.topic_img = topic_img['name']
+            if topic_description:
+                topic.topic_description = topic_description
             else:
                 topic.topic_img = None
             if topic_content:

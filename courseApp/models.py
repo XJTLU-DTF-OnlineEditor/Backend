@@ -8,7 +8,7 @@ from identity.models import Admin
 
 class Topic(models.Model):
     topic_title = models.CharField(max_length=20, verbose_name='Topic title')  # Topic title
-    topic_id = models.IntegerField(primary_key=True, auto_created=True)
+    topic_id = models.AutoField(primary_key=True, auto_created=True)
     teacher = models.ForeignKey(to=Admin, on_delete=models.CASCADE)
     topic_description = models.TextField(max_length=200, default="")  # A brief description of the content
     topic_content = models.TextField(null=True)  # introduction to the main content of the topic

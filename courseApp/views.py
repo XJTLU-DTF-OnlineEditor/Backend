@@ -471,7 +471,12 @@ def Courses(request, topic_title):
         else:
             result = {
                 "error_code": 204,
-                "msg": topic_title + " does not exist.",
+                'topic_id': topic.topic_id,
+                'topic_title': topic_title,
+                'topic_description': topic.topic_description,
+                'topic_img': str(topic.topic_img),
+                'topic_content': topic.topic_content,
+                "msg": topic_title + " does not have any courses.",
             }
     except Exception as e:
         print(e)

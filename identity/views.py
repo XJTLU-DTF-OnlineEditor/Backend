@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from Django_editor_backend import settings
-from courseApp.models import MyCourse, Topic
+from courseApp.models import MyCourse
 from identity.forms import UploadImageForm
 from identity.models import Person, Admin, VerificationEmail
 from identity.student_action_models import History, Collect

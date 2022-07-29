@@ -20,7 +20,7 @@ idna==2.8
 jieba==0.42.1
 Jinja2==2.10.1
 lazy-object-proxy==1.4.3
-lxml==4.4.1
+lxml
 MarkupSafe==1.1.1
 mccabe==0.6.1
 mysqlclient==2.0.3
@@ -49,5 +49,4 @@ wincertstore==0.2
 wrapt==1.12.1
 yapf==0.28.0
 func-timeout==4.3.5
-django-simple-captcha
 django-ranged-response

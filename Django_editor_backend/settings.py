@@ -110,11 +110,11 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'online_editor1',
-        'HOST': '47.111.13.213',
+        'NAME': 'online_editor',
+        'HOST': '114.115.249.201',
         'POST': 3306,
         'USER': 'root',
-        'PASSWORD': 'Zwh20000529,'
+        'PASSWORD': 'Xjtlu_lab_2022'
     },
 }
 

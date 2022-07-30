@@ -1,6 +1,4 @@
-import os.path
 import shutil
-
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from Django_editor_backend.settings import BASE_DIR
@@ -33,7 +31,7 @@ def run_interactive(request):
             "error_code": 200,
             "msg": "success"
         }
-    except ArithmeticError as e:  # 处理运行时的错误并将错误存入数据库
+    except Exception as e:  # 处理运行时的错误并将错误存入数据库
         print(e)
         result = {
             "error_code": 500,

@@ -1,12 +1,9 @@
 import os
 import shutil
-import time
-
 from django.db import connection
 from django.db.models import Q, Count
 from django.http.response import JsonResponse
 from django.views.decorators.http import require_http_methods
-
 from identity.models import Person
 from .models import MyCourse, Topic
 from identity.student_action_models import Like, Collect, History
@@ -15,7 +12,6 @@ from datetime import date, datetime
 from django.core import serializers  # JsonResponse用来将QuerySet序列化
 from django.conf import settings
 import uuid
-
 global binlogEnd, binlogFile
 
 """
@@ -669,6 +665,7 @@ def create(request):
         course_content = content.get("content")
         hint = content.get("hint")
         answer = content.get("answer")
+        code = content.get("code")
 
         if (len(related_topic) > 0) & (len(title) > 0) & (len(course_content) > 0):
             try:
@@ -679,7 +676,8 @@ def create(request):
                                                  content=course_content,
                                                  subtopic_id=subtopic_id,
                                                  hint=hint,
-                                                 answer=answer)
+                                                 answer=answer,
+                                                 code=code)
                 course = json.loads(serializers.serialize("json", {course}))
                 data = course[0]['fields']
                 data['id'] = course[0]['pk']
@@ -721,6 +719,7 @@ def edit(request):
         title = content.get("title")
         answer = content.get("answer")
         hint = content.get("hint")
+        code = content.get("code")
         content = content.get("content")
 
         # teacher_id = request_body.get("teacher_id")
@@ -729,6 +728,7 @@ def edit(request):
                 "error_code": 422,
                 "msg": "received empty content."
             }
+            return JsonResponse(result)
         try:
             course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))
             if title:
@@ -739,6 +739,8 @@ def edit(request):
                 course.answer = answer
             if hint:
                 course.hint = hint
+            if code:
+                course.code = code
             course.save()
 
             course = MyCourse.objects.get(Q(id=id) & Q(related_topic__topic_title=related_topic))

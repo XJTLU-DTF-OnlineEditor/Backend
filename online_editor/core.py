@@ -40,7 +40,7 @@ def linux_path(type, id):
 
 
 def windows_path(type, id):
-    root = "C:/tmp/source_%s" % id
+    root = "/tmp/source_%s" % id
     if type == Path.root:
         return root
     elif type == Path.source:
@@ -79,15 +79,16 @@ def input_in(id, input):
         raise e
 
 
-def check_files(path, id):
+def check_files(path, id, source_files):
     filelist = sorted(os.listdir(path), key=lambda x: os.path.getmtime(os.path.join(path, x)))
-    source_files = [windows_path(Path.source, id), windows_path(Path.output, id),
-                    windows_path(Path.requirements, id)]
+    source_files = [windows_path(source_file['title'], id) for source_file in source_files]
+    source_files = [*source_files, windows_path(Path.output, id)]
+    print(source_files)
     for file in filelist:
         abs_file_path = os.path.normpath(os.path.join(path, file))
         if abs_file_path not in source_files:
             if os.path.isdir(abs_file_path):
-                check_files(abs_file_path, id)
+                check_files(abs_file_path, id, source_files)
             elif re.findall('fig_%s_[0-9]\.png' % id, abs_file_path):
                 des_dir = os.path.normpath(os.path.join(RESULT_ROOT, id, file))
                 if not os.path.exists(os.path.dirname(des_dir)):
@@ -101,8 +102,8 @@ def check_files(path, id):
                 notify_ws_clients(id, "file", abs_file_path)
 
 
-def send_save_result(id, output, errors):
-    check_files(windows_path(Path.root, id), id)
+def send_save_result(id, output, errors, filelist):
+    check_files(windows_path(Path.root, id), id, filelist)
     code_obj = Codes.objects.get(code_id=id)
     answer = code_obj.course.answer
     if not errors and answer == output.strip():
@@ -158,6 +159,7 @@ def terminate_container(id):
 
 def runcode(id, lang, filelist):
     os.mkdir(windows_path(Path.root, id))
+    print(filelist)
     for file in filelist:
         save_as_file(windows_path(file['title'], id), save_plot_pic(file['content'], id), id)
     try:
@@ -167,26 +169,27 @@ def runcode(id, lang, filelist):
                      linux_path(Path.source, id))
         processes["process_%s" % id] = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True,
                                              universal_newlines=True, encoding='utf-8')
-        pool.submit(runcode_timer, id)
+        pool.submit(runcode_timer, id, filelist)
     except Exception as e:
         terminate_container(id)
         raise e
 
 
-def runcode_timer(id):
+def runcode_timer(id, filelist):
     try:
-        interactive_input_output(id)
+        interactive_input_output(id, filelist)
     except FunctionTimedOut as e:
         handle_warning(id, "request timeout")
 
 
-@func_set_timeout(600)
-def interactive_input_output(id):
+@func_set_timeout(300)
+def interactive_input_output(id, filelist):
     output = ''
     while processes["process_%s" % id].poll() is None:
         try:
             tmp = processes["process_%s" % id].stdout.readline()
-            if not str(tmp).startswith(("WARNING", "Looking in indexes")):
+            print(str(tmp).find("pip install"))
+            if (not str(tmp).startswith(("WARNING", "Looking in indexes"))) and (str(tmp).find("pip install") == -1):
                 notify_ws_clients(id, "output", tmp)
                 output += tmp
         except Exception as error:
@@ -194,7 +197,7 @@ def interactive_input_output(id):
     else:
         errors = ''
         for error in processes["process_%s" % id].stderr.readlines():
-            if not str(error).startswith(("WARNING", "Looking in indexes")):
+            if (not str(error).startswith(("WARNING", "Looking in indexes"))) and (str(error).find("pip install") == -1):
                 errors += error
         errors = errors.replace(linux_path(Path.root, id) + '/', '')
-    send_save_result(id, output, errors)
+    send_save_result(id, output, errors, filelist)

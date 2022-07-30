@@ -32,6 +32,7 @@ class MyCourse(models.Model):
     subtopic_id = models.IntegerField(verbose_name='课程id')
     hint = models.TextField(blank=True, null=True)
     answer = models.TextField(blank=True, null=True)
+    code = models.TextField(blank=True, null=True, verbose_name='骨架代码')
 
     def __str__(self):
         return self.title

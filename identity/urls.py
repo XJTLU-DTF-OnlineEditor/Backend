@@ -19,5 +19,6 @@ urlpatterns = [
     path('icon/', views.edit_usericon),
     path('edit_userInfo/', views.edit_userInfo),
     path('send_verification_email/', views.send_verify_email),
-    path('user_course_progress/', views.user_course_progress)
+    path('user_course_progress/', views.user_course_progress),
+    path('updateTag/', views.updateTag)
 ]

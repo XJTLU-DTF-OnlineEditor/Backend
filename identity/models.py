@@ -19,6 +19,8 @@ class Person(models.Model):
     user_icon = models.ImageField(upload_to=user_directory_path, null=True, blank=True)
     tags = models.CharField(blank=True, null=True,
                             max_length=20)  # tags chosen by users, each number has the designated skill
+    # 1 for java, 2 for Python, 3 for C++, 4 for Machine Learning, 5 for Java Web, 6 for Distributed system,
+    # 7 for Matlab, 8 for React
 
     def icon_url(self):
         if self.user_icon and hasattr(self.user_icon, 'url'):

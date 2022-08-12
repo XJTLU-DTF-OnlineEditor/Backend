@@ -587,10 +587,43 @@ def user_course_progress(request):
         return JsonResponse(msg)
     current_authority = request.META.get("HTTP_CURRENTAUTHORITY")
     # if (token != "null") & request.user.is_authenticated:
-    #     try:
+    #     try
     #         current_user = request.user
 
     msg = {
 
     }
+    return JsonResponse(msg)
+
+
+def updateTag(request):
+    if request.user.is_authenticated:
+        current_user = request.user
+        request_content = json.loads(request.body)
+        print(request_content)
+        if 'tags' in request_content.keys():
+            tags = request_content.get("tags")
+            tagStr = ""
+            for tag in tags:
+                tagStr += tag
+            print(tagStr)
+            current_user.person.tags = tagStr
+            current_user.person.save()
+            print(current_user.person.tags)
+            msg = {
+                "status": "ok",
+                "error_code": 200,
+                "msg": "update tag success"
+            }
+        else:
+            msg = {
+                "status": "error",
+                "error_code": 403,
+                "msg": "No tag values"
+                }
+    else:
+        msg = {
+            "error_code": 401,
+            "msg": "account needs to be authenticated"
+        }
     return JsonResponse(msg)

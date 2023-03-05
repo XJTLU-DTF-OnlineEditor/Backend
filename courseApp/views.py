@@ -167,7 +167,8 @@ def top_topic(request, num):
             top_6_topic = Topic.objects.get(pk=key)
             top_6_topic_img = ""
             if top_6_topic.topic_img:
-                top_6_topic_img = str("http://120.26.46.74:4000/media/") + str(top_6_topic.topic_img)
+                top_6_topic_img = str("/media/" + str(top_6_topic.topic_img))
+                # str("http://120.26.46.74:4000/media/") + str(top_6_topic.topic_img)
             else:
                 top_6_topic_img = None
             topic_dict = {
@@ -216,7 +217,8 @@ def new_topic(request):
             newest_topic = Topic.objects.get(pk=key)
             newest_topic_img = ""
             if newest_topic.topic_img:
-                newest_topic_img = str("http://120.26.46.74:4000/media/") + str(newest_topic.topic_img)
+                newest_topic_img = str("/media/" + str(newest_topic.topic_img))
+                # str("http://120.26.46.74:4000/media/") + str(newest_topic.topic_img)
             else:
                 newest_topic_img = None
             topic_dict = {
